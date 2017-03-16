@@ -14,11 +14,11 @@ struct HLVertex {
 using HLIndex = int32_t;
 
 struct HLQuad {
-	HLIndex face[4];
+	HLIndex idx[4];
 };
 
 struct HLHexa {
-	HLIndex volume[8];
+	HLIndex idx[8];
 };
 
 enum class HLResult : uint8_t {
@@ -115,11 +115,12 @@ public:
 				}
 				quads = new HLQuad[quads_count];
 				for (int i = 0; i < quads_count; ++i) {
-					if (fscanf(file, "%d %d %d %d %*d",
-						&quads[i].face[0], &quads[i].face[1], &quads[i].face[2], &quads[i].face[3]) == 0) {
+					uint32_t idx[4];
+					if (fscanf(file, "%d %d %d %d %*d", idx, idx + 1, idx + 2, idx + 3) == 0) {
 						HL_LOG("ERROR: malformed mesh file. Unexpected quad format.\n");
 						goto error;
 					}
+					for (int j = 0; j < 4; ++j) quads[i].idx[j] = idx[j] - 1;
 				}
 			// Hex indices
 			} else if (strcmp(buffer, "Hexahedra") == 0) {
@@ -129,12 +130,12 @@ public:
 				}
 				hexas = new HLHexa[hexas_count];
 				for (int i = 0; i < hexas_count; ++i) {
-					if (fscanf(file, "%d %d %d %d %d %d %d %d %*d", 
-						&hexas[i].volume[0], &hexas[i].volume[1], &hexas[i].volume[2], &hexas[i].volume[3],
-						&hexas[i].volume[4], &hexas[i].volume[5], &hexas[i].volume[6], &hexas[i].volume[7]) == 0) {
+					uint32_t idx[8];
+					if (fscanf(file, "%d %d %d %d %d %d %d %d %*d", idx, idx + 1, idx + 2, idx + 3, idx + 4, idx + 5, idx + 6, idx + 7) == 0) {
 						HL_LOG("ERROR: malformed mesh file. Unexpected hexahedra format.\n");
 						goto error;
 					}
+					for (int j = 0; j < 8; ++j) hexas[i].idx[j] = idx[j] - 1;
 				}
 			// End of file
 			} else if (strcmp(buffer, "End") == 0) {

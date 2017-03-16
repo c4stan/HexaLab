@@ -8143,16 +8143,16 @@ function __ZN6HLMesh4loadENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9alloc
  var $165 = 0, $166 = 0, $167 = 0, $168 = 0, $169 = 0, $17 = 0, $170 = 0, $171 = 0, $172 = 0, $173 = 0, $174 = 0, $175 = 0, $176 = 0, $177 = 0, $178 = 0, $179 = 0, $18 = 0, $180 = 0, $181 = 0, $182 = 0;
  var $183 = 0, $184 = 0, $185 = 0, $186 = 0, $187 = 0, $188 = 0, $189 = 0, $19 = 0, $190 = 0, $191 = 0, $192 = 0, $193 = 0, $194 = 0, $195 = 0, $196 = 0, $197 = 0, $198 = 0, $199 = 0, $2 = 0, $20 = 0;
  var $200 = 0, $201 = 0, $202 = 0, $203 = 0, $204 = 0, $205 = 0, $206 = 0, $207 = 0, $208 = 0, $209 = 0, $21 = 0, $210 = 0, $211 = 0, $212 = 0, $213 = 0, $214 = 0, $215 = 0, $216 = 0, $217 = 0, $218 = 0;
- var $219 = 0, $22 = 0, $220 = 0, $221 = 0, $222 = 0, $223 = 0, $224 = 0, $225 = 0, $226 = 0, $227 = 0, $228 = 0, $23 = 0, $24 = 0, $25 = 0, $26 = 0, $27 = 0, $28 = 0, $29 = 0, $3 = 0, $30 = 0;
- var $31 = 0, $32 = 0, $33 = 0, $34 = 0, $35 = 0, $36 = 0, $37 = 0, $38 = 0, $39 = 0, $4 = 0, $40 = 0, $41 = 0, $42 = 0, $43 = 0, $44 = 0, $45 = 0, $46 = 0, $47 = 0, $48 = 0, $49 = 0;
- var $5 = 0, $50 = 0, $51 = 0, $52 = 0, $53 = 0, $54 = 0, $55 = 0, $56 = 0, $57 = 0, $58 = 0, $59 = 0, $6 = 0, $60 = 0, $61 = 0, $62 = 0, $63 = 0, $64 = 0, $65 = 0, $66 = 0, $67 = 0;
- var $68 = 0, $69 = 0, $7 = 0, $70 = 0, $71 = 0, $72 = 0, $73 = 0, $74 = 0, $75 = 0, $76 = 0, $77 = 0, $78 = 0, $79 = 0, $8 = 0, $80 = 0, $81 = 0, $82 = 0, $83 = 0, $84 = 0, $85 = 0;
- var $86 = 0, $87 = 0, $88 = 0, $89 = 0, $9 = 0, $90 = 0, $91 = 0, $92 = 0, $93 = 0, $94 = 0, $95 = 0, $96 = 0, $97 = 0, $98 = 0, $99 = 0, $buffer = 0, $dimension = 0, $file = 0, $hexas = 0, $hexas_count = 0;
- var $i = 0, $i1 = 0, $i2 = 0, $or$cond = 0, $or$cond3 = 0, $or$cond5 = 0, $precision = 0, $quads = 0, $quads_count = 0, $vararg_buffer = 0, $vararg_buffer11 = 0, $vararg_buffer14 = 0, $vararg_buffer16 = 0, $vararg_buffer19 = 0, $vararg_buffer21 = 0, $vararg_buffer24 = 0, $vararg_buffer26 = 0, $vararg_buffer31 = 0, $vararg_buffer33 = 0, $vararg_buffer36 = 0;
- var $vararg_buffer38 = 0, $vararg_buffer44 = 0, $vararg_buffer46 = 0, $vararg_buffer49 = 0, $vararg_buffer51 = 0, $vararg_buffer6 = 0, $vararg_buffer61 = 0, $vararg_buffer63 = 0, $vararg_buffer65 = 0, $vararg_buffer67 = 0, $vararg_buffer69 = 0, $vararg_buffer9 = 0, $vararg_ptr29 = 0, $vararg_ptr30 = 0, $vararg_ptr41 = 0, $vararg_ptr42 = 0, $vararg_ptr43 = 0, $vararg_ptr54 = 0, $vararg_ptr55 = 0, $vararg_ptr56 = 0;
- var $vararg_ptr57 = 0, $vararg_ptr58 = 0, $vararg_ptr59 = 0, $vararg_ptr60 = 0, $vertices = 0, $vertices_count = 0, label = 0, sp = 0;
+ var $22 = 0, $23 = 0, $24 = 0, $25 = 0, $26 = 0, $27 = 0, $28 = 0, $29 = 0, $3 = 0, $30 = 0, $31 = 0, $32 = 0, $33 = 0, $34 = 0, $35 = 0, $36 = 0, $37 = 0, $38 = 0, $39 = 0, $4 = 0;
+ var $40 = 0, $41 = 0, $42 = 0, $43 = 0, $44 = 0, $45 = 0, $46 = 0, $47 = 0, $48 = 0, $49 = 0, $5 = 0, $50 = 0, $51 = 0, $52 = 0, $53 = 0, $54 = 0, $55 = 0, $56 = 0, $57 = 0, $58 = 0;
+ var $59 = 0, $6 = 0, $60 = 0, $61 = 0, $62 = 0, $63 = 0, $64 = 0, $65 = 0, $66 = 0, $67 = 0, $68 = 0, $69 = 0, $7 = 0, $70 = 0, $71 = 0, $72 = 0, $73 = 0, $74 = 0, $75 = 0, $76 = 0;
+ var $77 = 0, $78 = 0, $79 = 0, $8 = 0, $80 = 0, $81 = 0, $82 = 0, $83 = 0, $84 = 0, $85 = 0, $86 = 0, $87 = 0, $88 = 0, $89 = 0, $9 = 0, $90 = 0, $91 = 0, $92 = 0, $93 = 0, $94 = 0;
+ var $95 = 0, $96 = 0, $97 = 0, $98 = 0, $99 = 0, $buffer = 0, $dimension = 0, $file = 0, $hexas = 0, $hexas_count = 0, $i = 0, $i1 = 0, $i2 = 0, $idx = 0, $idx3 = 0, $j = 0, $j4 = 0, $or$cond = 0, $or$cond3 = 0, $or$cond5 = 0;
+ var $precision = 0, $quads = 0, $quads_count = 0, $vararg_buffer = 0, $vararg_buffer11 = 0, $vararg_buffer14 = 0, $vararg_buffer16 = 0, $vararg_buffer19 = 0, $vararg_buffer21 = 0, $vararg_buffer24 = 0, $vararg_buffer26 = 0, $vararg_buffer31 = 0, $vararg_buffer33 = 0, $vararg_buffer36 = 0, $vararg_buffer38 = 0, $vararg_buffer44 = 0, $vararg_buffer46 = 0, $vararg_buffer49 = 0, $vararg_buffer51 = 0, $vararg_buffer6 = 0;
+ var $vararg_buffer61 = 0, $vararg_buffer63 = 0, $vararg_buffer65 = 0, $vararg_buffer67 = 0, $vararg_buffer69 = 0, $vararg_buffer9 = 0, $vararg_ptr29 = 0, $vararg_ptr30 = 0, $vararg_ptr41 = 0, $vararg_ptr42 = 0, $vararg_ptr43 = 0, $vararg_ptr54 = 0, $vararg_ptr55 = 0, $vararg_ptr56 = 0, $vararg_ptr57 = 0, $vararg_ptr58 = 0, $vararg_ptr59 = 0, $vararg_ptr60 = 0, $vertices = 0, $vertices_count = 0;
+ var label = 0, sp = 0;
  sp = STACKTOP;
- STACKTOP = STACKTOP + 496|0; if ((STACKTOP|0) >= (STACK_MAX|0)) abort();
+ STACKTOP = STACKTOP + 560|0; if ((STACKTOP|0) >= (STACK_MAX|0)) abort();
  $vararg_buffer69 = sp + 216|0;
  $vararg_buffer67 = sp + 208|0;
  $vararg_buffer65 = sp + 200|0;
@@ -8176,12 +8176,14 @@ function __ZN6HLMesh4loadENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9alloc
  $vararg_buffer9 = sp + 16|0;
  $vararg_buffer6 = sp + 8|0;
  $vararg_buffer = sp;
- $buffer = sp + 392|0;
- $precision = sp + 260|0;
- $dimension = sp + 256|0;
- $vertices_count = sp + 252|0;
- $quads_count = sp + 248|0;
- $hexas_count = sp + 244|0;
+ $buffer = sp + 448|0;
+ $precision = sp + 316|0;
+ $dimension = sp + 312|0;
+ $vertices_count = sp + 308|0;
+ $quads_count = sp + 304|0;
+ $hexas_count = sp + 300|0;
+ $idx = sp + 264|0;
+ $idx3 = sp + 224|0;
  $31 = $this;
  $32 = $31;
  $29 = $filename;
@@ -8276,8 +8278,8 @@ function __ZN6HLMesh4loadENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9alloc
   HEAP32[$vararg_buffer>>2] = $81;
   (_printf(1800,$vararg_buffer)|0);
   $30 = 1;
-  $228 = $30;
-  STACKTOP = sp;return ($228|0);
+  $218 = $30;
+  STACKTOP = sp;return ($218|0);
  }
  HEAP32[$vertices_count>>2] = 0;
  HEAP32[$quads_count>>2] = 0;
@@ -8407,126 +8409,132 @@ function __ZN6HLMesh4loadENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9alloc
      continue L13;
     }
     $137 = $file;
-    $138 = $i1;
-    $139 = $quads;
-    $140 = (($139) + ($138<<4)|0);
-    $141 = $i1;
-    $142 = $quads;
-    $143 = (($142) + ($141<<4)|0);
-    $144 = ((($143)) + 4|0);
-    $145 = $i1;
-    $146 = $quads;
-    $147 = (($146) + ($145<<4)|0);
-    $148 = ((($147)) + 8|0);
-    $149 = $i1;
-    $150 = $quads;
-    $151 = (($150) + ($149<<4)|0);
-    $152 = ((($151)) + 12|0);
-    HEAP32[$vararg_buffer38>>2] = $140;
+    $138 = ((($idx)) + 4|0);
+    $139 = ((($idx)) + 8|0);
+    $140 = ((($idx)) + 12|0);
+    HEAP32[$vararg_buffer38>>2] = $idx;
     $vararg_ptr41 = ((($vararg_buffer38)) + 4|0);
-    HEAP32[$vararg_ptr41>>2] = $144;
+    HEAP32[$vararg_ptr41>>2] = $138;
     $vararg_ptr42 = ((($vararg_buffer38)) + 8|0);
-    HEAP32[$vararg_ptr42>>2] = $148;
+    HEAP32[$vararg_ptr42>>2] = $139;
     $vararg_ptr43 = ((($vararg_buffer38)) + 12|0);
-    HEAP32[$vararg_ptr43>>2] = $152;
-    $153 = (_fscanf($137,2270,$vararg_buffer38)|0);
-    $154 = ($153|0)==(0);
-    if ($154) {
+    HEAP32[$vararg_ptr43>>2] = $140;
+    $141 = (_fscanf($137,2270,$vararg_buffer38)|0);
+    $142 = ($141|0)==(0);
+    if ($142) {
      label = 32;
      break L13;
     }
-    $155 = $i1;
-    $156 = (($155) + 1)|0;
-    $i1 = $156;
+    $j = 0;
+    while(1) {
+     $143 = $j;
+     $144 = ($143|0)<(4);
+     if (!($144)) {
+      break;
+     }
+     $145 = $j;
+     $146 = (($idx) + ($145<<2)|0);
+     $147 = HEAP32[$146>>2]|0;
+     $148 = (($147) - 1)|0;
+     $149 = $j;
+     $150 = $i1;
+     $151 = $quads;
+     $152 = (($151) + ($150<<4)|0);
+     $153 = (($152) + ($149<<2)|0);
+     HEAP32[$153>>2] = $148;
+     $154 = $j;
+     $155 = (($154) + 1)|0;
+     $j = $155;
+    }
+    $156 = $i1;
+    $157 = (($156) + 1)|0;
+    $i1 = $157;
    }
   }
-  $157 = (_strcmp($buffer,2339)|0);
-  $158 = ($157|0)==(0);
-  if (!($158)) {
-   label = 42;
+  $158 = (_strcmp($buffer,2339)|0);
+  $159 = ($158|0)==(0);
+  if (!($159)) {
+   label = 48;
    break;
   }
-  $159 = $file;
+  $160 = $file;
   HEAP32[$vararg_buffer46>>2] = $hexas_count;
-  $160 = (_fscanf($159,1902,$vararg_buffer46)|0);
-  $161 = ($160|0)==(0);
-  $162 = $hexas;
-  $163 = ($162|0)!=(0|0);
-  $or$cond5 = $161 | $163;
+  $161 = (_fscanf($160,1902,$vararg_buffer46)|0);
+  $162 = ($161|0)==(0);
+  $163 = $hexas;
+  $164 = ($163|0)!=(0|0);
+  $or$cond5 = $162 | $164;
   if ($or$cond5) {
-   label = 36;
+   label = 39;
    break;
   }
-  $164 = HEAP32[$hexas_count>>2]|0;
-  $$arith = $164<<5;
-  $$overflow = ($164>>>0)>(134217727);
-  $165 = $$overflow ? -1 : $$arith;
-  $166 = (__Znaj($165)|0);
-  $hexas = $166;
+  $165 = HEAP32[$hexas_count>>2]|0;
+  $$arith = $165<<5;
+  $$overflow = ($165>>>0)>(134217727);
+  $166 = $$overflow ? -1 : $$arith;
+  $167 = (__Znaj($166)|0);
+  $hexas = $167;
   $i2 = 0;
   while(1) {
-   $167 = $i2;
-   $168 = HEAP32[$hexas_count>>2]|0;
-   $169 = ($167>>>0)<($168>>>0);
-   if (!($169)) {
+   $168 = $i2;
+   $169 = HEAP32[$hexas_count>>2]|0;
+   $170 = ($168>>>0)<($169>>>0);
+   if (!($170)) {
     continue L13;
    }
-   $170 = $file;
-   $171 = $i2;
-   $172 = $hexas;
-   $173 = (($172) + ($171<<5)|0);
-   $174 = $i2;
-   $175 = $hexas;
-   $176 = (($175) + ($174<<5)|0);
-   $177 = ((($176)) + 4|0);
-   $178 = $i2;
-   $179 = $hexas;
-   $180 = (($179) + ($178<<5)|0);
-   $181 = ((($180)) + 8|0);
-   $182 = $i2;
-   $183 = $hexas;
-   $184 = (($183) + ($182<<5)|0);
-   $185 = ((($184)) + 12|0);
-   $186 = $i2;
-   $187 = $hexas;
-   $188 = (($187) + ($186<<5)|0);
-   $189 = ((($188)) + 16|0);
-   $190 = $i2;
-   $191 = $hexas;
-   $192 = (($191) + ($190<<5)|0);
-   $193 = ((($192)) + 20|0);
-   $194 = $i2;
-   $195 = $hexas;
-   $196 = (($195) + ($194<<5)|0);
-   $197 = ((($196)) + 24|0);
-   $198 = $i2;
-   $199 = $hexas;
-   $200 = (($199) + ($198<<5)|0);
-   $201 = ((($200)) + 28|0);
-   HEAP32[$vararg_buffer51>>2] = $173;
+   $171 = $file;
+   $172 = ((($idx3)) + 4|0);
+   $173 = ((($idx3)) + 8|0);
+   $174 = ((($idx3)) + 12|0);
+   $175 = ((($idx3)) + 16|0);
+   $176 = ((($idx3)) + 20|0);
+   $177 = ((($idx3)) + 24|0);
+   $178 = ((($idx3)) + 28|0);
+   HEAP32[$vararg_buffer51>>2] = $idx3;
    $vararg_ptr54 = ((($vararg_buffer51)) + 4|0);
-   HEAP32[$vararg_ptr54>>2] = $177;
+   HEAP32[$vararg_ptr54>>2] = $172;
    $vararg_ptr55 = ((($vararg_buffer51)) + 8|0);
-   HEAP32[$vararg_ptr55>>2] = $181;
+   HEAP32[$vararg_ptr55>>2] = $173;
    $vararg_ptr56 = ((($vararg_buffer51)) + 12|0);
-   HEAP32[$vararg_ptr56>>2] = $185;
+   HEAP32[$vararg_ptr56>>2] = $174;
    $vararg_ptr57 = ((($vararg_buffer51)) + 16|0);
-   HEAP32[$vararg_ptr57>>2] = $189;
+   HEAP32[$vararg_ptr57>>2] = $175;
    $vararg_ptr58 = ((($vararg_buffer51)) + 20|0);
-   HEAP32[$vararg_ptr58>>2] = $193;
+   HEAP32[$vararg_ptr58>>2] = $176;
    $vararg_ptr59 = ((($vararg_buffer51)) + 24|0);
-   HEAP32[$vararg_ptr59>>2] = $197;
+   HEAP32[$vararg_ptr59>>2] = $177;
    $vararg_ptr60 = ((($vararg_buffer51)) + 28|0);
-   HEAP32[$vararg_ptr60>>2] = $201;
-   $202 = (_fscanf($170,2415,$vararg_buffer51)|0);
-   $203 = ($202|0)==(0);
-   if ($203) {
-    label = 40;
+   HEAP32[$vararg_ptr60>>2] = $178;
+   $179 = (_fscanf($171,2415,$vararg_buffer51)|0);
+   $180 = ($179|0)==(0);
+   if ($180) {
+    label = 43;
     break L13;
    }
-   $204 = $i2;
-   $205 = (($204) + 1)|0;
-   $i2 = $205;
+   $j4 = 0;
+   while(1) {
+    $181 = $j4;
+    $182 = ($181|0)<(8);
+    if (!($182)) {
+     break;
+    }
+    $183 = $j4;
+    $184 = (($idx3) + ($183<<2)|0);
+    $185 = HEAP32[$184>>2]|0;
+    $186 = (($185) - 1)|0;
+    $187 = $j4;
+    $188 = $i2;
+    $189 = $hexas;
+    $190 = (($189) + ($188<<5)|0);
+    $191 = (($190) + ($187<<2)|0);
+    HEAP32[$191>>2] = $186;
+    $192 = $j4;
+    $193 = (($192) + 1)|0;
+    $j4 = $193;
+   }
+   $194 = $i2;
+   $195 = (($194) + 1)|0;
+   $i2 = $195;
   }
  }
  switch (label|0) {
@@ -8558,70 +8566,70 @@ function __ZN6HLMesh4loadENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9alloc
    (_printf(2286,$vararg_buffer44)|0);
    break;
   }
-  case 36: {
+  case 39: {
    (_printf(2349,$vararg_buffer49)|0);
    break;
   }
-  case 40: {
+  case 43: {
    (_printf(2443,$vararg_buffer61)|0);
    break;
   }
-  case 42: {
-   $206 = (_strcmp($buffer,2501)|0);
-   $207 = ($206|0)==(0);
-   if (!($207)) {
+  case 48: {
+   $196 = (_strcmp($buffer,2501)|0);
+   $197 = ($196|0)==(0);
+   if (!($197)) {
     (_printf(2505,$vararg_buffer63)|0);
     break;
    }
-   $208 = $vertices;
-   $209 = ($208|0)==(0|0);
-   if ($209) {
+   $198 = $vertices;
+   $199 = ($198|0)==(0|0);
+   if ($199) {
     (_printf(2550,$vararg_buffer65)|0);
     break;
    }
-   $210 = $hexas;
-   $211 = ($210|0)==(0|0);
-   if ($211) {
+   $200 = $hexas;
+   $201 = ($200|0)==(0|0);
+   if ($201) {
     (_printf(2593,$vararg_buffer67)|0);
     break;
    }
-   $212 = $quads;
-   $213 = ($212|0)==(0|0);
-   if ($213) {
+   $202 = $quads;
+   $203 = ($202|0)==(0|0);
+   if ($203) {
     (_printf(2633,$vararg_buffer69)|0);
    }
-   $214 = $vertices;
-   HEAP32[$32>>2] = $214;
-   $215 = HEAP32[$vertices_count>>2]|0;
-   $216 = ((($32)) + 12|0);
-   HEAP32[$216>>2] = $215;
-   $217 = $quads;
-   $218 = ((($32)) + 4|0);
-   HEAP32[$218>>2] = $217;
-   $219 = HEAP32[$quads_count>>2]|0;
-   $220 = ((($32)) + 16|0);
-   HEAP32[$220>>2] = $219;
-   $221 = $hexas;
-   $222 = ((($32)) + 8|0);
-   HEAP32[$222>>2] = $221;
-   $223 = HEAP32[$hexas_count>>2]|0;
-   $224 = ((($32)) + 20|0);
-   HEAP32[$224>>2] = $223;
+   $204 = $vertices;
+   HEAP32[$32>>2] = $204;
+   $205 = HEAP32[$vertices_count>>2]|0;
+   $206 = ((($32)) + 12|0);
+   HEAP32[$206>>2] = $205;
+   $207 = $quads;
+   $208 = ((($32)) + 4|0);
+   HEAP32[$208>>2] = $207;
+   $209 = HEAP32[$quads_count>>2]|0;
+   $210 = ((($32)) + 16|0);
+   HEAP32[$210>>2] = $209;
+   $211 = $hexas;
+   $212 = ((($32)) + 8|0);
+   HEAP32[$212>>2] = $211;
+   $213 = HEAP32[$hexas_count>>2]|0;
+   $214 = ((($32)) + 20|0);
+   HEAP32[$214>>2] = $213;
    $30 = 0;
-   $228 = $30;
-   STACKTOP = sp;return ($228|0);
+   $218 = $30;
+   STACKTOP = sp;return ($218|0);
    break;
   }
  }
- $225 = $vertices;
- _free($225);
- $226 = $quads;
- _free($226);
- $227 = $hexas;
- _free($227);
+ $215 = $vertices;
+ _free($215);
+ $216 = $quads;
+ _free($216);
+ $217 = $hexas;
+ _free($217);
  $30 = 1;
- $228 = $30;
- STACKTOP = sp;return ($228|0);
+ $218 = $30;
+ STACKTOP = sp;return ($218|0);
 }
 function __ZN6HLMesh12get_verticesEv($this) {
  $this = $this|0;
