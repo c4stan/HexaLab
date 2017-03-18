@@ -2,6 +2,11 @@
 
 var stdout = document.getElementById("text_output");
 
+function log(string) {
+    stdout.value += string;
+    stdout.scrollTop = stdout.scrollHeight;
+}
+
 function open_nav() {
     document.getElementById("sidenav").style.width = "300px";
     console.log("open");
@@ -23,17 +28,19 @@ document.getElementById("file_input").onchange = function(event) {
         var data = new Int8Array(event.target.result);
         FS.createDataFile("/", file.name, data, true, true);
 
-        stdout.value += "Processing...\n";
-        var HLmesh = new Module.HLMesh();
+        log("Processing...\n");
+        var HLmesh = new Module.Mesh();
         var result = HLmesh.load(file.name);
-        if (result == Module.HLResult.Success) {
-            stdout.value += "Adding to scene...\n";
+        if (result == Module.Result.Success) {
+            HLmesh.make_ibuffer();
+            log("Adding to scene...\n");
             set_mesh(HLmesh);
-            stdout.value += "Done!\n";
+            log("Done!\n");
         } else {
-            stdout.value += "Error!\n";
+            log("Error!\n");
         }
+        HLmesh.delete();
     }
-    stdout.value += "Loading " + file.name + '...\n';
+    log("Loading " + file.name + '...\n');
     reader.readAsArrayBuffer(file, "UTF-8");
 };

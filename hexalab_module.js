@@ -5,7 +5,8 @@ var Module = {
     print : function() {
         var element = document.getElementById("text_output");
         return function (text) {
-            if (element) element.value += text + '\n';
+            element.value += text + '\n';
+            element.scrollTop = element.scrollHeight;
         }
     } ()
 };
