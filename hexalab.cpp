@@ -615,47 +615,6 @@ namespace HexaLab {
 			HL_LOG("%d vertex indices, %d visible faces (%d triangles)\n", count, count / 6, count / 3);
 		}
 
-		void make_ibuffer(Plane* plane) {
-			delete[] this->ibuffer;
-			this->ibuffer = new Index[this->vertices_count];
-			int count = 0, capacity = vertices_count;
-			HL_LOG("Building visible ibuffer...\n");
-			for (int h = 0; h < this->hexas_count; ++h) {
-				for (int f = 0; f < 6; ++f) {
-					Face& face = this->faces.get(this->hexas[h].faces[f]);
-					if (face.hexas[Face::Hexa::Next] == -1 || face.hexas[Face::Hexa::Prev] == -1) {
-						// resize check
-						if (count + 6 > capacity) {
-							Index* old = this->ibuffer;
-							this->ibuffer = new Index[capacity * 2];
-							memcpy(this->ibuffer, old, sizeof(Index) * count);
-							delete[] old;
-							capacity *= 2;
-						}
-
-						if (face.hexas[Face::Hexa::Prev] != -1) {	// CCW winding
-							this->ibuffer[count++] = face.vertices[Face::Vertex::TopRight];
-							this->ibuffer[count++] = face.vertices[Face::Vertex::TopLeft];
-							this->ibuffer[count++] = face.vertices[Face::Vertex::BotLeft];
-							this->ibuffer[count++] = face.vertices[Face::Vertex::TopRight];
-							this->ibuffer[count++] = face.vertices[Face::Vertex::BotLeft];
-							this->ibuffer[count++] = face.vertices[Face::Vertex::BotRight];
-						} else {									// CW winding
-							this->ibuffer[count++] = face.vertices[Face::Vertex::BotLeft];
-							this->ibuffer[count++] = face.vertices[Face::Vertex::TopLeft];
-							this->ibuffer[count++] = face.vertices[Face::Vertex::TopRight];
-							this->ibuffer[count++] = face.vertices[Face::Vertex::BotRight];
-							this->ibuffer[count++] = face.vertices[Face::Vertex::BotLeft];
-							this->ibuffer[count++] = face.vertices[Face::Vertex::TopRight];
-						}
-						
-					}
-				}
-			}
-			this->indices_count = count;
-			HL_LOG("%d vertex indices, %d visible faces (%d triangles)\n", count, count / 6, count / 3);
-		}
-
 		Result load(std::string filename) { 
 			FILE* file = fopen(filename.c_str(), "rb");
 			if (file == NULL) {
