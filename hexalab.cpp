@@ -3,18 +3,34 @@
 #include <stdlib.h>
 #include <string>
 #include <string.h>
+#include <math.h>
+#include <float.h>
 #include <assert.h>
 #include <emscripten.h>
 #include <emscripten/bind.h>
 
 namespace HexaLab {
+	// ------------------------------------------------------------------------------------------------------
+	// Basic types
+	// ------------------------------------------------------------------------------------------------------
 	using u8 = uint8_t;
 	using u32 = uint32_t;
+	using u64 = uint64_t;
 	using js_ptr = uintptr_t;
 
 	using Index = int32_t;
 	static const Index NullIndex = 0xffffffff;
 
+	enum class Result : u8 {
+		Success,
+		Error
+	};
+
+	#define HL_LOG(...) printf(__VA_ARGS__)
+	
+	// ------------------------------------------------------------------------------------------------------
+	// Math
+	// ------------------------------------------------------------------------------------------------------
 	struct float3 {
 		float x;
 		float y;
@@ -31,12 +47,81 @@ namespace HexaLab {
 		float3 operator+(const float3& f3) {
 			return float3(this->x + f3.x, this->y + f3.y, this->z + f3.z);
 		}
+
+		float3 operator*(float f) {
+			return float3(this->x * f, this->y * f, this->z * f);
+		}
 	};
 
 	float dotf3(float3& a, float3& b) {
 		return a.x * b.x + a.y * b.y + a.z * b.z;
 	}
 
+	float lenf3(float3& f3) {
+		return sqrtf(f3.x * f3.x + f3.y * f3.y + f3.z * f3.z);
+	}
+
+	float3 normf3(float3& f3) {
+		float len = lenf3(f3);
+		return float3(f3.x / len, f3.y / len, f3.z / len);
+	}
+
+	float3 normf3(float3&& f3) {
+		float len = lenf3(f3);
+		return float3(f3.x / len, f3.y / len, f3.z / len);
+	}
+
+	class Plane {
+		float3 normal;
+		float d;
+
+	public:
+		Plane(float3& position, float3& normal) {
+			this->normal = normf3(normal);
+			this->d = -dotf3(position, this->normal);
+		}
+
+		Plane(float x, float y, float z, float nx, float ny, float nz) {
+			this->normal = normf3(float3(nx, ny, nz));
+			float3 position = float3(x, y, z);
+			this->d = -dotf3(position, this->normal);
+		}
+
+		Plane() {
+			this->normal = float3(1, 0, 0);
+			this->d = 0;
+		}
+
+		void move(float x, float y, float z) {
+			float3 position = float3(x, y, z);
+			this->d = -dotf3(position, this->normal);
+		}
+
+		void orient(float nx, float ny, float nz) {
+			this->normal = normf3(float3(nx, ny, nz));
+		}
+
+		float solve(float3& point) {
+			return dotf3(this->normal, point) + this->d;
+		}
+	};
+	// ------------------------------------------------------------------------------------------------------
+	// Geometry
+	// ------------------------------------------------------------------------------------------------------
+	struct AABB {
+		float3 min;
+		float3 max;
+
+		void fit(float3& f3) {
+			if (f3.x < min.x) min.x = f3.x;
+			if (f3.y < min.y) min.y = f3.y;
+			if (f3.z < min.z) min.z = f3.z;
+			if (f3.x > max.x) max.x = f3.x;
+			if (f3.y > max.y) max.y = f3.y;
+			if (f3.z > max.z) max.z = f3.z;
+		}
+	};
+	
 	struct Vertex {
 		Index edges[20];
 		int e_count;
@@ -91,15 +176,16 @@ namespace HexaLab {
 		};
 
 		enum Hexa {
-			Next = 0,
-			Prev,
+			Front = 0,
+			Back,
 		};
 	};
 
 	struct Hexa {
 		Index faces[6];
-		bool is_visible;
-		bool is_surface;
+		u32 is_culled 		: 1;
+		u32 is_surface 		: 1;
+		u32 _pad;
 
 		Hexa() {
 			this->faces[0] = -1;
@@ -425,37 +511,10 @@ namespace HexaLab {
 		}
 	};
 
-	class Plane {
-		float3 normal;
-		float d;
-
-	public:
-		Plane(float3& position, float3& normal) {
-			this->normal = normal;
-			this->d = -dotf3(position, normal);
-		}
-
-		void move(float3& position) {
-			this->d = -dotf3(position, this->normal);
-		}
-
-		void orient(float3& normal) {
-			this->normal = normal;			
-		}
-
-		int solve(float3& point) {
-			return dotf3(this->normal, point) + this->d;
-		}
-	};
-
-	enum class Result : u8 {
-		Success,
-		Error
-	};
-
-	#define HL_LOG(...) printf(__VA_ARGS__)
-
 	class Mesh {
+	public:
+		int max_f_count = 0;
+		int max_e_count = 0;
 	private:
 		float3* vbuffer;
 		Vertex* vertices;
@@ -469,14 +528,16 @@ namespace HexaLab {
 		EdgeTable edges;
 		FaceTable faces;
 
+		AABB aabb;
+
 		void insert_edge(Index* indices, Hexa::Vertex v1, Hexa::Vertex v2, Face::Edge edge_enum, Index f) {
 			Index e = edges.lookup(indices[v1], indices[v2]);
 			if (e != -1) {
 				Edge& edge = edges.get(e);
 				Face& face = faces.get(f);
 				edge.faces[edge.f_count++] = f;
-				if (edge.f_count > 8) {
-					int qwe = 1;
+				if (edge.f_count > max_f_count) {
+					max_f_count = edge.f_count;
 				}
 				face.edges[edge_enum] = e;
 			} else {
@@ -488,14 +549,14 @@ namespace HexaLab {
 
 				Vertex& a = vertices[indices[v1]];
 				a.edges[a.e_count++] = e;
-				if (a.e_count > 8) {
-					int qwe = 1;
+				if (a.e_count > max_e_count) {
+					max_e_count = a.e_count;
 				}
 
 				Vertex& b = vertices[indices[v2]];
 				b.edges[b.e_count++] = e;
-				if (b.e_count > 8) {
-					int qew  =1;
+				if (b.e_count > max_e_count) {
+					max_e_count = b.e_count;
 				}
 			}
 		}
@@ -506,6 +567,7 @@ namespace HexaLab {
 				assert(faces.get(f).hexas[hexa_enum] == -1);
 				faces.get(f).hexas[hexa_enum] = hexas_count;
 				hexas[hexas_count].faces[face_enum] = f;
+				this->hexas[this->hexas_count].is_surface = (faces.get(f).hexas[0] == -1 || faces.get(f).hexas[1] == -1);
 			} else {
 				Face face;
 				face.vertices[0] = indices[v1];
@@ -514,6 +576,7 @@ namespace HexaLab {
 				face.vertices[3] = indices[v4];
 				face.hexas[hexa_enum] = hexas_count;
 				hexas[hexas_count].faces[face_enum] = f = faces.insert(face);
+				this->hexas[this->hexas_count].is_surface = (faces.get(f).hexas[0] == -1 || faces.get(f).hexas[1] == -1);
 			
 				insert_edge(indices, v1, v2, Face::Edge::Top, f);
 				insert_edge(indices, v2, v3, Face::Edge::Left, f);
@@ -525,12 +588,14 @@ namespace HexaLab {
 		}
 
 		void insert_hexa(Index* indices) {
-			insert_face(indices, Hexa::Vertex::NearTopRight, Hexa::Vertex::NearTopLeft, Hexa::Vertex::NearBotLeft, Hexa::Vertex::NearBotRight, Face::Hexa::Next, Hexa::Face::Near);
-			insert_face(indices, Hexa::Vertex::FarTopRight, Hexa::Vertex::FarTopLeft, Hexa::Vertex::FarBotLeft, Hexa::Vertex::FarBotRight, Face::Hexa::Prev, Hexa::Face::Far);
-			insert_face(indices, Hexa::Vertex::NearTopLeft, Hexa::Vertex::FarTopLeft, Hexa::Vertex::FarBotLeft, Hexa::Vertex::NearBotLeft, Face::Hexa::Next, Hexa::Face::Left);
-			insert_face(indices, Hexa::Vertex::NearTopRight, Hexa::Vertex::FarTopRight, Hexa::Vertex::FarBotRight, Hexa::Vertex::NearBotRight, Face::Hexa::Prev, Hexa::Face::Right);
-			insert_face(indices, Hexa::Vertex::NearBotRight, Hexa::Vertex::NearBotLeft, Hexa::Vertex::FarBotLeft, Hexa::Vertex::FarBotRight, Face::Hexa::Next, Hexa::Face::Bottom);
-			insert_face(indices, Hexa::Vertex::NearTopRight, Hexa::Vertex::NearTopLeft, Hexa::Vertex::FarTopLeft, Hexa::Vertex::FarTopRight, Face::Hexa::Prev, Hexa::Face::Top);
+			this->hexas[this->hexas_count].is_surface = 1;
+
+			insert_face(indices, Hexa::Vertex::NearTopRight, Hexa::Vertex::NearTopLeft, Hexa::Vertex::NearBotLeft, Hexa::Vertex::NearBotRight, Face::Hexa::Back, Hexa::Face::Near);
+			insert_face(indices, Hexa::Vertex::FarTopRight, Hexa::Vertex::FarTopLeft, Hexa::Vertex::FarBotLeft, Hexa::Vertex::FarBotRight, Face::Hexa::Front, Hexa::Face::Far);
+			insert_face(indices, Hexa::Vertex::NearTopLeft, Hexa::Vertex::FarTopLeft, Hexa::Vertex::FarBotLeft, Hexa::Vertex::NearBotLeft, Face::Hexa::Back, Hexa::Face::Left);
+			insert_face(indices, Hexa::Vertex::NearTopRight, Hexa::Vertex::FarTopRight, Hexa::Vertex::FarBotRight, Hexa::Vertex::NearBotRight, Face::Hexa::Front, Hexa::Face::Right);
+			insert_face(indices, Hexa::Vertex::NearBotRight, Hexa::Vertex::NearBotLeft, Hexa::Vertex::FarBotLeft, Hexa::Vertex::FarBotRight, Face::Hexa::Back, Hexa::Face::Bottom);
+			insert_face(indices, Hexa::Vertex::NearTopRight, Hexa::Vertex::NearTopLeft, Hexa::Vertex::FarTopLeft, Hexa::Vertex::FarTopRight, Face::Hexa::Front, Hexa::Face::Top);
 
 			++hexas_count;
 		}
@@ -546,6 +611,8 @@ namespace HexaLab {
 			this->hexas_count = 0;
 			this->quads = nullptr;
 			this->quads_count = 0;
+			this->aabb.min = float3(FLT_MAX, FLT_MAX, FLT_MAX);
+			this->aabb.max = float3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 		}
 
 		~Mesh() {
@@ -574,32 +641,69 @@ namespace HexaLab {
 		js_ptr get_ibuffer() { return (js_ptr) this->ibuffer; }
 		int get_indices_count() { return this->indices_count; }
 
-		void make_ibuffer() {
+		float get_center_x() { return (this->aabb.min.x + this->aabb.max.x) / 2.f; }
+		float get_center_y() { return (this->aabb.min.y + this->aabb.max.y) / 2.f; }
+		float get_center_z() { return (this->aabb.min.z + this->aabb.max.z) / 2.f; }
+		float get_diagonal_size() { 
+			float width = this->aabb.max.x - this->aabb.min.x; 
+			float height = this->aabb.max.y - this->aabb.min.y; 
+			float length = this->aabb.max.z - this->aabb.min.z;
+			return sqrtf(width * width + height * height + length * length); 
+		}
+
+		void make_ibuffer(Plane* plane) {
 			delete[] this->ibuffer;
 			this->ibuffer = new Index[this->vertices_count];
 			int count = 0, capacity = vertices_count;
 			HL_LOG("Building visible ibuffer...\n");
 			for (int h = 0; h < this->hexas_count; ++h) {
+				// Try to cull the hexa
+				bool culled = false;
+				if (plane != nullptr) {
+					Face& near_face = this->faces.get(this->hexas[h].faces[Hexa::Face::Near]);
+					for (int i = 0; i < 4; ++i) {
+						if (plane->solve(this->vbuffer[near_face.vertices[i]]) < 0) {
+							this->hexas[h].is_culled = culled = true;
+							break;
+						}
+					}
+					if (!culled) {
+						Face& far_face = this->faces.get(this->hexas[h].faces[Hexa::Face::Far]);
+						for (int i = 0; i < 4; ++i) {
+							if (plane->solve(this->vbuffer[far_face.vertices[i]]) < 0) {
+								this->hexas[h].is_culled = culled = true;
+								break;
+							}
+						}
+					}
+				}
+				if (!culled) this->hexas[h].is_culled = false;
+				else continue;
+
+				// Test for visibility				
 				for (int f = 0; f < 6; ++f) {
 					Face& face = this->faces.get(this->hexas[h].faces[f]);
-					if (face.hexas[Face::Hexa::Next] == -1 || face.hexas[Face::Hexa::Prev] == -1) {
-						// resize check
+					bool front_face = !hexas[face.hexas[Face::Hexa::Back]].is_culled && (face.hexas[Face::Hexa::Front] == -1 || hexas[face.hexas[Face::Hexa::Front]].is_culled);
+					bool back_face = !hexas[face.hexas[Face::Hexa::Front]].is_culled && (face.hexas[Face::Hexa::Back] == -1 || hexas[face.hexas[Face::Hexa::Back]].is_culled);
+					if (front_face || back_face) {
+						// resize check before insertion
 						if (count + 6 > capacity) {
 							Index* old = this->ibuffer;
 							this->ibuffer = new Index[capacity * 2];
 							memcpy(this->ibuffer, old, sizeof(Index) * count);
 							delete[] old;
 							capacity *= 2;
+							printf("RESIZE\n");
 						}
 
-						if (face.hexas[Face::Hexa::Prev] != -1) {	// CCW winding
+						if (back_face) {		// CCW winding
 							this->ibuffer[count++] = face.vertices[Face::Vertex::TopRight];
 							this->ibuffer[count++] = face.vertices[Face::Vertex::TopLeft];
 							this->ibuffer[count++] = face.vertices[Face::Vertex::BotLeft];
 							this->ibuffer[count++] = face.vertices[Face::Vertex::TopRight];
 							this->ibuffer[count++] = face.vertices[Face::Vertex::BotLeft];
 							this->ibuffer[count++] = face.vertices[Face::Vertex::BotRight];
-						} else {									// CW winding
+						} else /*if (back_face)*/ {				// CW winding
 							this->ibuffer[count++] = face.vertices[Face::Vertex::BotLeft];
 							this->ibuffer[count++] = face.vertices[Face::Vertex::TopLeft];
 							this->ibuffer[count++] = face.vertices[Face::Vertex::TopRight];
@@ -615,17 +719,7 @@ namespace HexaLab {
 			HL_LOG("%d vertex indices, %d visible faces (%d triangles)\n", count, count / 6, count / 3);
 		}
 
-		Result load(std::string filename) { 
-			FILE* file = fopen(filename.c_str(), "rb");
-			if (file == NULL) {
-				HL_LOG("Unable to find file %s!\n", filename.c_str());
-				return Result::Error;
-			}
-
-			char buffer[100];
-			int precision;
-			int dimension;
-
+		void unload() {
 			delete[] this->vbuffer;
 			this->vbuffer = nullptr;
 			delete[] this->vertices;
@@ -650,6 +744,21 @@ namespace HexaLab {
 			if (this->faces.get_count() > 0) {
 				this->faces.clear();
 			}
+
+			this->aabb.min = float3(FLT_MAX, FLT_MAX, FLT_MAX);
+			this->aabb.max = float3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+		}
+
+		Result load(std::string filename) { 
+			FILE* file = fopen(filename.c_str(), "rb");
+			if (file == NULL) {
+				HL_LOG("Unable to find file %s!\n", filename.c_str());
+				return Result::Error;
+			}
+
+			char buffer[100];
+			int precision;
+			int dimension;
 			
 			while (1) {
 				// Read a line
@@ -687,6 +796,7 @@ namespace HexaLab {
 							HL_LOG("ERROR: malformed mesh file. Unexpected vertex format.\n");
 							goto error;
 						}
+						this->aabb.fit(this->vbuffer[i]);
 					}
 				// Quad indices
 				} else if (strcmp(buffer, "Quadrilaterals") == 0) {
@@ -762,6 +872,8 @@ namespace HexaLab {
 			HL_LOG("%d edges total\n", edges.get_count());
 			HL_LOG("%d faces total\n", faces.get_count());
 
+			HL_LOG("max e_count:%d, max f_count:%d\n", this->max_e_count, this->max_f_count);
+
 			return Result::Success;
 
 			error:
@@ -795,10 +907,9 @@ namespace HexaLab {
 int main() {
 	using namespace HexaLab;
 	Mesh m;
-	m.load("C:/Code/HexaLab/data/doubletorus.mesh");
-	m.make_ibuffer();
-	m.load("C:/Code/HexaLab/data/block.mesh");
-	m.make_ibuffer();
+	Plane p(0, 0, 0, 0, 1, 1);
+	m.load("C:/Code/HexaLab/data/test.mesh");
+	m.make_ibuffer(&p);
 }
 */
 
@@ -813,6 +924,15 @@ EMSCRIPTEN_BINDINGS(Result) {
 	;
 }
 
+EMSCRIPTEN_BINDINGS(Plane) {
+	class_<HexaLab::Plane>("Plane")
+	.constructor<>()
+	.function("orient",		&HexaLab::Plane::orient)
+	.function("move",		&HexaLab::Plane::move)
+	.function("solve",		&HexaLab::Plane::solve)
+	;
+}
+
 EMSCRIPTEN_BINDINGS(Mesh) {
 	class_<HexaLab::Mesh>("Mesh")
     .constructor<>()
@@ -821,6 +941,10 @@ EMSCRIPTEN_BINDINGS(Mesh) {
     .function("get_vertices_count",	&HexaLab::Mesh::get_vertices_count)
     .function("get_ibuffer",		&HexaLab::Mesh::get_ibuffer)
     .function("get_indices_count",	&HexaLab::Mesh::get_indices_count)
-    .function("make_ibuffer",		&HexaLab::Mesh::make_ibuffer)
+    .function("make_ibuffer",		&HexaLab::Mesh::make_ibuffer,		allow_raw_pointers())
+	.function("get_center_x", 		&HexaLab::Mesh::get_center_x)
+	.function("get_center_y", 		&HexaLab::Mesh::get_center_y)
+	.function("get_center_z", 		&HexaLab::Mesh::get_center_z)
+	.function("get_diagonal_size",	&HexaLab::Mesh::get_diagonal_size)
     ;
 }

@@ -16,7 +16,12 @@
 						<a href="javascript:void(0)" id="nav_closer" onclick="close_nav()">&times;</a>
 						<button onclick="pick_file()">Select mesh</button>
 						<input id="file_input" type="file" style="display: none;"></input>
+						</br>
 						<!--input id="file_input" type="text"></input-->
+						<input id="plane_nx" type="number" style="width:50px" value="1"></input>
+						<input id="plane_ny" type="number" style="width:50px" value="0"></input>
+						<input id="plane_nz" type="number" style="width:50px" value="0"></input>
+						<input id="plane_d" type="range"></input>
 						<textarea id="text_output" readonly></textarea>
 					</div>
 				</div>
@@ -36,8 +41,8 @@
 
 		<script type="text/javascript">
 			window.onload = function() {
-				init();
-				animate();
+				renderer_init();
+				renderer_animate();
 			}
 		</script>
 
