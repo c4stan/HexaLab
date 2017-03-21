@@ -119,9 +119,9 @@ function renderer_update_mesh() {
     }
 
     geometry.computeFaceNormals();
-    geometry.computeVertexNormals();
+    //geometry.computeVertexNormals();
 
-    var material = new THREE.MeshLambertMaterial({ color: 0xeeccee /*,side : THREE.DoubleSide*/ });
+    var material = new THREE.MeshLambertMaterial({ color: 0xeeccee, wireframe : true /*,side : THREE.DoubleSide*/ });
     g_render_item = new THREE.Mesh(geometry, material);
 
     // add the new render item to the scene

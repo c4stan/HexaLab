@@ -8,6 +8,9 @@
 #include <assert.h>
 #include <emscripten.h>
 #include <emscripten/bind.h>
+#include <unordered_map>
+
+#include "../vcglib/eigenlib/Eigen/Eigen"
 
 namespace HexaLab {
 	// ------------------------------------------------------------------------------------------------------
@@ -525,9 +528,8 @@ namespace HexaLab {
 		int hexas_count;
 		Quad* quads;	// Not always available
 		int quads_count;
-		EdgeTable edges;
-		FaceTable faces;
-
+		std::unordered_map<Edge> edges;
+		std::unordered_map<Face> faces;
 		AABB aabb;
 
 		void insert_edge(Index* indices, Hexa::Vertex v1, Hexa::Vertex v2, Face::Edge edge_enum, Index f) {
