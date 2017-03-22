@@ -3,7 +3,6 @@
 
 #include "common.h"
 #include "mesh.h"
-#include "plane.h"
 
 using namespace emscripten;
 
@@ -14,12 +13,16 @@ EMSCRIPTEN_BINDINGS(Result) {
 	;
 }
 
+EMSCRIPTEN_BINDINGS(vec3) {
+	class_<Eigen::Vector3f>("vec3")
+	.constructor<float, float, float>()
+	;
+}
+
 EMSCRIPTEN_BINDINGS(Plane) {
-	class_<HexaLab::Plane>("Plane")
+	class_<Eigen::Hyperplane<float, 3>>("Plane")
 	.constructor<>()
-	.function("orient",		&HexaLab::Plane::orient)
-	.function("move",		&HexaLab::Plane::move)
-	.function("solve",		&HexaLab::Plane::solve)
+	.constructor<Eigen::Vector3f&, Eigen::Vector3f&>()
 	;
 }
 

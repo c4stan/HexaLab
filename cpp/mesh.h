@@ -7,28 +7,10 @@
 #include <float.h>
 
 #include <eigen/dense>
+#include <eigen/geometry>
 
 namespace HexaLab {
     using namespace Eigen;
-
-    // -------------------------------------------------------------------------------------
-    // Typical AABB. As of now it is only used to get the mesh bounds.
-    struct AABB {
-		Vector3f min;
-		Vector3f max;
-
-        AABB() {
-            this->min = Vector3f(FLT_MAX, FLT_MAX, FLT_MAX);
-            this->max = Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-        }
-
-		void fit(Vector3f& f3) {
-			for (int i = 0; i < 3; ++i)
-                if (f3[i] < min[i]) min[i] = f3[i];
-			for (int i = 0; i < 3; ++i)
-                if (f3[i] > max[i]) max[i] = f3[i];
-		}
-	};
 
 	struct Quad {
 		Index idx[4];
@@ -60,8 +42,6 @@ namespace HexaLab {
     // and all the data structures previously mentioned, and make_ibuffer, which rebuilds
     // an ibuffer of the mesh surface from the mesh's elements properties and adjacencies.
     
-    class Plane;
-
 	class Mesh {
 	public:
 		int max_f_count = 0;
@@ -78,7 +58,7 @@ namespace HexaLab {
 		int quads_count;
 		EdgeTable edges;
 		FaceTable faces;
-		AABB aabb;
+		AlignedBox3f aabb;
 
         // Inserts one edge of one hexa.
 		void insert_edge(Index* indices, Hexa::Vertex v1, Hexa::Vertex v2, Face::Edge edge_enum, Index f);
@@ -98,20 +78,17 @@ namespace HexaLab {
 		js_ptr get_ibuffer() { return (js_ptr) this->ibuffer; }
 		int get_indices_count() { return this->indices_count; }
 
-		float get_center_x() { return (this->aabb.min.x() + this->aabb.max.x()) / 2.f; }
-		float get_center_y() { return (this->aabb.min.y() + this->aabb.max.y()) / 2.f; }
-		float get_center_z() { return (this->aabb.min.z() + this->aabb.max.z()) / 2.f; }
-		float get_diagonal_size() {
-            Vector3f sizes = this->aabb.max - this->aabb.min; // sizes == [width, height, length]
-            return sqrtf(sizes[0] * sizes[0] + sizes[1] * sizes[1] + sizes[2] * sizes[2]); 
-        }
+		float get_center_x() { return this->aabb.center().x(); }
+		float get_center_y() { return this->aabb.center().y(); }
+		float get_center_z() { return this->aabb.center().z(); }
+        Vector3f get_center() { return this->aabb.center(); }
+		float get_diagonal_size() { return this->aabb.diagonal().norm(); }
 
         // Build a new ibuffer by reading the mesh data structures.
-		void make_ibuffer(Plane* plane);
+		void make_ibuffer(Hyperplane<float, 3>* plane);
 
         // Loads the mesh from a mesh file. 
         // The mesh file parser is not complete, but it's good enough for the purpose. 
 		Result load(std::string filename);
 	};
 }
-

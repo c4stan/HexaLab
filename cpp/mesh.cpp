@@ -4,8 +4,6 @@
 #include <string>
 #include <string.h>
 
-#include "plane.h"
-
 namespace HexaLab {
     using namespace Eigen;
 
@@ -122,7 +120,7 @@ namespace HexaLab {
     }
 
     // Build a new ibuffer by reading the mesh data structures.
-    void Mesh::make_ibuffer(Plane* plane) {
+    void Mesh::make_ibuffer(Hyperplane<float, 3>* plane) {
         delete[] this->ibuffer;
         this->ibuffer = new Index[this->vertices_count];
         int count = 0, capacity = vertices_count;
@@ -134,7 +132,7 @@ namespace HexaLab {
             if (plane != nullptr) {
                 Face& near_face = this->faces.get(this->hexas[h].faces[Hexa::Face::Near]);
                 for (int i = 0; i < 4; ++i) {
-                    if (plane->solve(this->vbuffer[near_face.vertices[i]]) < 0) {
+                    if (plane->signedDistance(this->vbuffer[near_face.vertices[i]]) < 0) {
                         this->hexas[h].is_culled = culled = true;
                         break;
                     }
@@ -142,7 +140,7 @@ namespace HexaLab {
                 if (!culled) {
                     Face& far_face = this->faces.get(this->hexas[h].faces[Hexa::Face::Far]);
                     for (int i = 0; i < 4; ++i) {
-                        if (plane->solve(this->vbuffer[far_face.vertices[i]]) < 0) {
+                        if (plane->signedDistance(this->vbuffer[far_face.vertices[i]]) < 0) {
                             this->hexas[h].is_culled = culled = true;
                             break;
                         }
@@ -245,7 +243,7 @@ namespace HexaLab {
                         HL_LOG("ERROR: malformed mesh file. Unexpected vertex format.\n");
                         goto error;
                     }
-                    this->aabb.fit(this->vbuffer[i]);
+                    this->aabb.extend(this->vbuffer[i]);
                 }
             // Quad indices
             } else if (strcmp(buffer, "Quadrilaterals") == 0) {
