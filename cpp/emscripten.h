@@ -1,10 +1,6 @@
 #include <emscripten.h>
 #include <emscripten/bind.h>
 
-#include "common.h"
-#include "mesh.h"
-#include "plane.h"
-
 using namespace emscripten;
 
 EMSCRIPTEN_BINDINGS(Result) {
