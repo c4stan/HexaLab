@@ -6,4 +6,5 @@ Hexahedral mesh web viewer
 * Three.js based renderer
 * Emscripten compiled c++ mesh processing
 
-# Sample
+# Samples
+![](http://i.imgur.com/eOfWW1N.png)
