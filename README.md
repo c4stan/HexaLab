@@ -1,5 +1,6 @@
 # HexaLab
 Hexahedral mesh web viewer
+https://c4stan.github.io/HexaLab/
 
 # Features
 * Fully embedded into an ordinary browser
