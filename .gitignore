@@ -1,3 +1,4 @@
 .vscode/
 data
 html/js/generated/*
+!html/js/generated/README.txt
