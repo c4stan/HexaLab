@@ -1,15 +1,21 @@
-#include <emscripten.h>
-#include <emscripten/bind.h>
-
+// HexaLab
 #include "common.h"
 #include "mesh.h"
+
+// Eigen
+#include <eigen/dense>
+#include <eigen/geometry>
+
+// Emscripten
+#include <emscripten.h>
+#include <emscripten/bind.h>
 
 using namespace emscripten;
 
 EMSCRIPTEN_BINDINGS(Result) {
     enum_<HexaLab::Result>("Result")
-	.value("Success", HexaLab::Result::Success)
-	.value("Error", HexaLab::Result::Error)
+	.value("Success", 	HexaLab::Result::Success)
+	.value("Error", 	HexaLab::Result::Error)
 	;
 }
 

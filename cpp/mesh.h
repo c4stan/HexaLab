@@ -1,16 +1,20 @@
 #pragma once
 
+// HexaLab
 #include "common.h"
-#include "edge_table.h"
-#include "face_table.h"
+#include "hexahedra.h"
 
-#include <float.h>
+// STL
+#include <unordered_set>
+#include <vector>
 
+// Eigen
 #include <eigen/dense>
 #include <eigen/geometry>
 
 namespace HexaLab {
     using namespace Eigen;
+    using namespace std;
 
 	struct Quad {
 		Index idx[4];
@@ -47,24 +51,23 @@ namespace HexaLab {
 		int max_f_count = 0;
 		int max_e_count = 0;
 	private:
-		Vector3f* vbuffer;
-		Vertex* vertices;
-		int vertices_count;
-		Index* ibuffer;
-		int indices_count;
-		Hexa* hexas;
-		int hexas_count;
-		Quad* quads;	// Not always available
-		int quads_count;
-		EdgeTable edges;
-		FaceTable faces;
+        std::vector<Vector3f> vbuffer;
+        std::vector<Vertex> vertices;
+        std::vector<Index> ibuffer;
+        std::vector<Hexa> hexas;
+        std::vector<Quad> quads;
+        std::vector<Edge> edges;
+        std::vector<Face> faces;
 		AlignedBox3f aabb;
+
+        std::unordered_set<EdgeID> edges_set;
+        std::unordered_set<FaceID> faces_set;
 
         // Inserts one edge of one hexa.
 		void insert_edge(Index* indices, Hexa::Vertex v1, Hexa::Vertex v2, Face::Edge edge_enum, Index f);
 
         // Inserts one face of one hexa. It is assumed that the face belongs to the last hexa, TODO fix this
-		void insert_face(Index* indices, Hexa::Vertex v1, Hexa::Vertex v2, Hexa::Vertex v3, Hexa::Vertex v4, Face::Hexa hexa_enum, Hexa::Face face_enum);
+		void insert_face(Index* indices, Hexa::Vertex v1, Hexa::Vertex v2, Hexa::Vertex v3, Hexa::Vertex v4, Face::Hexa hexa_enum, Hexa::Face face_enum, Index h);
 
         // Inserts a new hexahedra into the mesh, from the indices of the hexa's vertices.
 		void insert_hexa(Index* indices);
@@ -73,15 +76,14 @@ namespace HexaLab {
 		Mesh();
 		~Mesh();
 
-		js_ptr get_vbuffer() { return (js_ptr) this->vbuffer; }
-		int get_vertices_count() { return this->vertices_count; }
-		js_ptr get_ibuffer() { return (js_ptr) this->ibuffer; }
-		int get_indices_count() { return this->indices_count; }
+		js_ptr get_vbuffer() { return (js_ptr) this->vbuffer.data(); }
+		int get_vertices_count() { return this->vbuffer.size(); }
+		js_ptr get_ibuffer() { return (js_ptr) this->ibuffer.data(); }
+		int get_indices_count() { return this->ibuffer.size(); }
 
 		float get_center_x() { return this->aabb.center().x(); }
 		float get_center_y() { return this->aabb.center().y(); }
 		float get_center_z() { return this->aabb.center().z(); }
-        Vector3f get_center() { return this->aabb.center(); }
 		float get_diagonal_size() { return this->aabb.diagonal().norm(); }
 
         // Build a new ibuffer by reading the mesh data structures.
