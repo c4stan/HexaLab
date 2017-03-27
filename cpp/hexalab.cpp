@@ -6,6 +6,15 @@
 #include <eigen/dense>
 #include <eigen/geometry>
 
+int main() {
+	using namespace HexaLab;
+	Mesh m;
+	m.load("C:/Code/old_hl_build/data/Test.mesh");
+	Eigen::Hyperplane<float, 3> p;
+	m.make_ibuffer(&p);
+}
+
+/*
 // Emscripten
 #include <emscripten.h>
 #include <emscripten/bind.h>
@@ -47,3 +56,4 @@ EMSCRIPTEN_BINDINGS(Mesh) {
 	.function("get_diagonal_size",	&HexaLab::Mesh::get_diagonal_size)
     ;
 }
+*/

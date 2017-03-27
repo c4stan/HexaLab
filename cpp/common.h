@@ -13,7 +13,6 @@ namespace HexaLab {
 	using js_ptr = uintptr_t;
 
 	using Index = int32_t;
-	static const Index NullIndex = 0xffffffff;
 
 	enum class Result : u8 {
 		Success,
