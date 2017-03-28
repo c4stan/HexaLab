@@ -7,7 +7,10 @@
 #include <unordered_map>
 
 namespace HexaLab {
+
     class MeshData {
+        friend class Loader;
+
     public:
         using Vert = Eigen::Vector3f;
 
@@ -21,14 +24,14 @@ namespace HexaLab {
         bool is_good() {
             return this->_is_good;
         }
-
-        friend MeshData load_from_file(const std::string& path);
-
     private:
         bool _is_good;
     };
 
-    MeshData load_from_file(const std::string& path);
+    class Loader {
+    public:
+        static MeshData load(const std::string& path);
+    };
 }
 
 #endif

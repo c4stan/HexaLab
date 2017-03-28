@@ -1,13 +1,17 @@
 #include "common.h"
 #include "mesh.h"
+#include "loader.h"
+#include "builder.h"
 #include <eigen/dense>
 #include <eigen/geometry>
 
-
 int main() {
 	using namespace HexaLab;
+
 	Mesh m;
-	//m.load("C:/Code/old_hl_build/data/Block.mesh");
+	MeshData data = Loader::load("data/Block.mesh");
+	Builder::build(m, data);
+	//m.load("data/Block.mesh");
 	//Eigen::Hyperplane<float, 3> p;
 	//m.make_ibuffer(&p);
 	m.validate();

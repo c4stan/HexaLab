@@ -4,7 +4,7 @@
 
 namespace HexaLab {
     
-    MeshData load_from_file(const std::string& path) {
+    MeshData Loader::load(const std::string& path) {
         MeshData data;
 
         std::string header;

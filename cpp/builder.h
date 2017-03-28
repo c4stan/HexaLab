@@ -96,7 +96,7 @@ namespace std {
 		}
 	};
 
-    bool operator==(HexaLab::Builder::IndexPair& lhs, HexaLab::Builder::IndexPair& rhs) {
+    inline bool operator==(const HexaLab::Builder::IndexPair& lhs, const HexaLab::Builder::IndexPair& rhs) {
         return (std::get<0>(lhs) == std::get<0>(rhs) && std::get<1>(lhs) == std::get<1>(rhs))
             || (std::get<0>(lhs) == std::get<1>(rhs) && std::get<1>(lhs) == std::get<0>(rhs));
     }
