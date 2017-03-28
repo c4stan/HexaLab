@@ -32,7 +32,7 @@ namespace HexaLab {
         d1.hexa = h;
         d1.face = f;
         d1.edge = e;
-        d1.vertex = std::get<0>(indices);
+        d1.vert = std::get<0>(indices);
 
         // Vertex B
         Mesh::Vert& b = s_mesh->verts[std::get<1>(indices)];
@@ -43,11 +43,11 @@ namespace HexaLab {
         d2.hexa = h;
         d2.face = f;
         d2.edge = e;
-        d2.vertex = std::get<1>(indices);
+        d2.vert = std::get<1>(indices);
 
         // Link darts along the edge
-        s_mesh->darts[s_mesh->darts.size() - 1].vertex_neighbor = s_mesh->darts.size() - 2;
-        s_mesh->darts[s_mesh->darts.size() - 2].vertex_neighbor = s_mesh->darts.size() - 1;
+        s_mesh->darts[s_mesh->darts.size() - 1].vert_neighbor = s_mesh->darts.size() - 2;
+        s_mesh->darts[s_mesh->darts.size() - 2].vert_neighbor = s_mesh->darts.size() - 1;
     }
 
     Builder::Hexa::Face Builder::opposite(Hexa::Face face) {

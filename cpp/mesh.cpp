@@ -16,21 +16,21 @@ namespace HexaLab {
             assert(a.hexa == f2.hexa
                 && a.face == f2.face
                 && a.edge == f2.edge
-                && a.vertex == f2.vertex);
+                && a.vert == f2.vert);
 
             const Dart& e1 = darts[a.edge_neighbor];
             const Dart& e2 = darts[e1.edge_neighbor];
             assert(a.hexa == e2.hexa
                 && a.face == e2.face
                 && a.edge == e2.edge
-                && a.vertex == e2.vertex);
+                && a.vert == e2.vert);
 
-            const Dart& v1 = darts[a.edge_neighbor];
-            const Dart& v2 = darts[v1.edge_neighbor];
+            const Dart& v1 = darts[a.vert_neighbor];
+            const Dart& v2 = darts[v1.vert_neighbor];
             assert(a.hexa == v2.hexa
                 && a.face == v2.face
                 && a.edge == v2.edge
-                && a.vertex == v2.vertex);
+                && a.vert == v2.vert);
 
             // TODO add more asserts
         }

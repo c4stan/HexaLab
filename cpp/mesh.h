@@ -36,11 +36,11 @@ namespace HexaLab {
             Index hexa_neighbor = -1;
             Index face_neighbor = -1;
             Index edge_neighbor = -1;
-            Index vertex_neighbor = -1;
+            Index vert_neighbor = -1;
             Index hexa = -1;
             Index face = -1;
             Index edge = -1;
-            Index vertex = -1;
+            Index vert = -1;
         };
 
 	private:
@@ -64,6 +64,11 @@ namespace HexaLab {
 		float get_diagonal_size() { return this->aabb.diagonal().norm(); }
 
         void validate();
+
+        Dart& flipV(Dart& dart) { return this->darts[dart.vert_neighbor]; }
+        Dart& flipE(Dart& dart) { return this->darts[dart.edge_neighbor]; }
+        Dart& flipF(Dart& dart) { return this->darts[dart.face_neighbor]; }
+        Dart& flipH(Dart& dart) { return this->darts[dart.hexa_neighbor]; }
 	};
 }
 
