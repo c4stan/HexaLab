@@ -224,6 +224,8 @@ namespace HexaLab {
         edges_map.clear();
         faces_map.clear();
 
+        mesh.verts.reserve(data.verts.size());
+
         for (unsigned int h = 0; h < data.hexas.size(); ++h) {
             add_hexa(data.hexas[h]);
         }

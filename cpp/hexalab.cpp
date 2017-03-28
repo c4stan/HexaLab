@@ -11,9 +11,6 @@ int main() {
 	Mesh m;
 	MeshData data = Loader::load("data/Block.mesh");
 	Builder::build(m, data);
-	//m.load("data/Block.mesh");
-	//Eigen::Hyperplane<float, 3> p;
-	//m.make_ibuffer(&p);
 	m.validate();
 }
 
