@@ -3,13 +3,14 @@
 #include <eigen/dense>
 #include <eigen/geometry>
 
+
 int main() {
 	using namespace HexaLab;
 	Mesh m;
-	m.load("C:/Code/old_hl_build/data/Block.mesh");
-	Eigen::Hyperplane<float, 3> p;
+	//m.load("C:/Code/old_hl_build/data/Block.mesh");
+	//Eigen::Hyperplane<float, 3> p;
 	//m.make_ibuffer(&p);
-	m.test();
+	m.validate();
 }
 
 /*
