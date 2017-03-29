@@ -7,11 +7,13 @@ namespace HexaLab {
         //assert(this->mesh != nullptr);
 
         this->vbuffer.clear();
+        this->mesh_aabb = AlignedBox3f();
         
         auto& verts = this->mesh->get_verts();
         int k = verts.size();
         for (unsigned int i = 0; i < verts.size(); ++i) {
             this->vbuffer.push_back(verts[i].position);
+            this->mesh_aabb.extend(verts[i].position);
         }
     }
 
@@ -57,29 +59,82 @@ namespace HexaLab {
                 }
                 nav.flipV().flipE(); // next face vertex
             } while(!nav.is_origin());
+
             if (culled) {
+                HL_LOG("CULL");
                 hexa.is_visible = false;
                 continue;
             }
 
             // The hexa is visible. Add it to the ibuffer.
             nav = mesh->navigate(hexa);
-            for (int j = 0; j < 6; ++j) {
+            for (int j = 0; j < 4; ++j) {
                 // store the index used as first for both this face's triangles
                 Index face_origin = nav.dart().vert;
                 // add the first triangle
                 ibuffer.push_back(face_origin);
+                
                 nav.flipV().flipE();
                 ibuffer.push_back(nav.dart().vert);
+                
                 nav.flipV();
                 ibuffer.push_back(nav.dart().vert);
+                
                 // add the second triangle
                 ibuffer.push_back(face_origin);
+                
                 nav.flipE();
                 ibuffer.push_back(nav.dart().vert);
+                
+                nav.flipV();
+                ibuffer.push_back(nav.dart().vert);
+
+                nav.flipE().flipV().flipF().flipE().flipV();
+            }
+            nav = mesh->navigate(hexa);
+            nav.flipF();
+            {
+                Index face_origin = nav.dart().vert;
+                // add the first triangle
+                ibuffer.push_back(face_origin);
+                
+                nav.flipV().flipE();
+                ibuffer.push_back(nav.dart().vert);
+                
+                nav.flipV();
+                ibuffer.push_back(nav.dart().vert);
+                
+                // add the second triangle
+                ibuffer.push_back(face_origin);
+                
+                nav.flipE();
+                ibuffer.push_back(nav.dart().vert);
+                
                 nav.flipV();
                 ibuffer.push_back(nav.dart().vert);
             }
+            nav = mesh->navigate(hexa);
+            nav.flipE().flipV().flipE().flipF();
+            {
+                Index face_origin = nav.dart().vert;
+                // add the first triangle
+                ibuffer.push_back(face_origin);
+                
+                nav.flipV().flipE();
+                ibuffer.push_back(nav.dart().vert);
+                
+                nav.flipV();
+                ibuffer.push_back(nav.dart().vert);
+                
+                // add the second triangle
+                ibuffer.push_back(face_origin);
+                
+                nav.flipE();
+                ibuffer.push_back(nav.dart().vert);
+                
+                nav.flipV();
+                ibuffer.push_back(nav.dart().vert);
+            }     
         }
     }
 }

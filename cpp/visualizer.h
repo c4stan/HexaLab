@@ -14,6 +14,7 @@ namespace HexaLab {
         std::vector<Index> ibuffer;
         Eigen::Hyperplane<float, 3> plane;
         Mesh* mesh = nullptr;
+		AlignedBox3f mesh_aabb;
 
     public:
         void set_mesh(Mesh& mesh) { this->mesh = &mesh; }
@@ -22,8 +23,8 @@ namespace HexaLab {
         void set_culling_plane(float3 normal, float d) { this->plane = Eigen::Hyperplane<float, 3>(normal, d); }
         void set_culling_plane(float nx, float ny, float nz, float x, float y, float z) { this->plane = Eigen::Hyperplane<float, 3>(float3(nx, ny, nz), float3(x, y, z)); }
         void set_culling_plane(float nx, float ny, float nz, float s) {
-            float size = mesh->get_aabb().diagonal().norm();
-            float3 center = mesh->get_aabb().center();
+            float size = mesh_aabb.diagonal().norm();
+            float3 center = mesh_aabb.center();
             float3 normal = float3(nx, ny, nz);
             float3 pos = center + normal * (size * s - size / 2);
             set_culling_plane(normal, pos);
@@ -36,8 +37,6 @@ namespace HexaLab {
         int get_vbuffer_size() { return this->vbuffer.size(); }
         js_ptr get_ibuffer() { return (js_ptr)this->ibuffer.data(); }
         int get_ibuffer_size() { return this->ibuffer.size(); }
-
-        int get_mesh_vsize() { return this->mesh->get_verts().size(); }
     };
 }
 

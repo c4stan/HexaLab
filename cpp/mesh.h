@@ -13,20 +13,20 @@ namespace HexaLab {
     using namespace std;
 
     struct Hexa {
-        Index dart;
+        Index dart = -1;
         bool is_visible;
     };
 
     struct Face {
-        Index dart;
+        Index dart = -1;
     };
 
     struct Edge {
-        Index dart;
+        Index dart = -1;
     };
 
     struct Vert {
-        Index dart;
+        Index dart = -1;
         Vector3f position;
     };
     
@@ -39,7 +39,6 @@ namespace HexaLab {
         vector<Edge> edges;
         vector<Vert> verts;
         vector<Dart> darts;
-		AlignedBox3f aabb;
 
 	public:
         vector<Hexa>& get_hexas() { return this->hexas; }
@@ -57,8 +56,6 @@ namespace HexaLab {
         Dart& get_dart(const Edge& edge) { return this->darts[edge.dart]; }
         Dart& get_dart(const Vert& vert) { return this->darts[vert.dart]; }
         Dart& get_dart(Index i) { return this->darts[i]; }
-
-        AlignedBox3f& get_aabb() { return this->aabb; }
 
         MeshNavigator navigate(Dart& dart) { return MeshNavigator(&dart, &dart, this); }
         MeshNavigator navigate(Hexa& hexa) { Dart& d = get_dart(hexa); return navigate(d); }

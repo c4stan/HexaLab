@@ -32,21 +32,6 @@ public:
 };
 
 
-/*
-int main() {
-	Visualizer v;
-	Result r = Importer::import("data/Block.mesh", v);
-	assert(r == Result::Success);
-	v.update_vbuffer();
-	v.update_ibuffer();
-
-	HL_LOG("%d %d\n", v.get_vbuffer_size(), v.get_ibuffer_size());
-}
-*/
-
-
-
-
 // Emscripten
 #include <emscripten.h>
 #include <emscripten/bind.h>

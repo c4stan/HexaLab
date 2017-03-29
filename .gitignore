@@ -1,4 +1,5 @@
 .vscode/
+cpp/hexalab_c.cpp
 data
 html/js/generated/*
 !html/js/generated/README.txt
