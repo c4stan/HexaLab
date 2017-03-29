@@ -5,6 +5,7 @@
 #include <eigen/dense>
 #include <eigen/geometry>
 
+/*
 int main() {
 	using namespace HexaLab;
 
@@ -13,6 +14,7 @@ int main() {
 	Builder::build(m, data);
 	m.validate();
 }
+*/
 
 /*
 // Emscripten

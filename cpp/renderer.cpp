@@ -64,7 +64,23 @@ namespace HexaLab {
             }
 
             // The hexa is visible. Add it to the ibuffer.
-            
+            nav = mesh->navigate(hexa);
+            for (int j = 0; j < 6; ++j) {
+                // store the index used as first for both this face's triangles
+                Index face_origin = nav.dart().vert;
+                // add the first triangle
+                ibuffer.push_back(face_origin);
+                nav.flipV().flipE();
+                ibuffer.push_back(nav.dart().vert);
+                nav.flipV();
+                ibuffer.push_back(nav.dart().vert);
+                // add the second triangle
+                ibuffer.push_back(face_origin);
+                nav.flipE();
+                ibuffer.push_back(nav.dart().vert);
+                nav.flipV();
+                ibuffer.push_back(nav.dart().vert);
+            }
         }
     }
 }
