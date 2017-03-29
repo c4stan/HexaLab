@@ -1,4 +1,4 @@
-#ifndef _HL_BUILDER_H
+#ifndef _HL_BUILDER_H_
 #define _HL_BUILDER_H_
 
 #include "common.h"

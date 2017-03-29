@@ -1,9 +1,9 @@
-#include "renderer.h"
+#include "visualizer.h"
 
 #include "mesh_navigator.h"
 
 namespace HexaLab {
-    void Renderer::update_vbuffer() {
+    void Visualizer::update_vbuffer() {
         assert(this->mesh != nullptr);
         
         auto& verts = this->mesh->get_verts();
@@ -12,7 +12,7 @@ namespace HexaLab {
         }
     }
 
-    void Renderer::update_ibuffer() {
+    void Visualizer::update_ibuffer() {
         this->ibuffer.clear();
 
         auto& hexas = this->mesh->get_hexas();

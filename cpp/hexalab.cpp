@@ -2,6 +2,7 @@
 #include "mesh.h"
 #include "loader.h"
 #include "builder.h"
+#include "visualizer.h"
 #include <eigen/dense>
 #include <eigen/geometry>
 
@@ -16,7 +17,7 @@ int main() {
 }
 */
 
-/*
+
 // Emscripten
 #include <emscripten.h>
 #include <emscripten/bind.h>
@@ -43,19 +44,40 @@ EMSCRIPTEN_BINDINGS(Plane) {
 	;
 }
 
+EMSCRIPTEN_BINDINGS(Loader) {
+	class_<HexaLab::Loader>("Loader")
+	.constructor<>()
+	.class_function("load", &HexaLab::Loader::load)
+	;
+}
+
+EMSCRIPTEN_BINDINGS(Builder) {
+	class_<HexaLab::Builder>("Builder")
+	.constructor<>()
+	.class_function("build", &HexaLab::Builder::build)
+	;
+}
+
 EMSCRIPTEN_BINDINGS(Mesh) {
 	class_<HexaLab::Mesh>("Mesh")
     .constructor<>()
-    .function("load",				&HexaLab::Mesh::load)
-    .function("get_vbuffer",		&HexaLab::Mesh::get_vbuffer)
-    .function("get_vertices_count",	&HexaLab::Mesh::get_vertices_count)
-    .function("get_ibuffer",		&HexaLab::Mesh::get_ibuffer)
-    .function("get_indices_count",	&HexaLab::Mesh::get_indices_count)
-    .function("make_ibuffer",		&HexaLab::Mesh::make_ibuffer,		allow_raw_pointers())
 	.function("get_center_x", 		&HexaLab::Mesh::get_center_x)
 	.function("get_center_y", 		&HexaLab::Mesh::get_center_y)
 	.function("get_center_z", 		&HexaLab::Mesh::get_center_z)
 	.function("get_diagonal_size",	&HexaLab::Mesh::get_diagonal_size)
     ;
 }
-*/
+
+EMSCRIPTEN_BINDINGS(Visualizer) {
+	class_<HexaLab::Visualizer>("Visualizer")
+    .constructor<>()
+	.function("set_mesh",	 		&HexaLab::Visualizer::set_mesh)
+	.function("update_vbuffer", 	&HexaLab::Visualizer::update_vbuffer)
+	.function("update_ibuffer", 	&HexaLab::Visualizer::update_ibuffer)
+	.function("set_culling_plane", 	select_overload<void(float, float, float, float)>(&HexaLab::Visualizer::set_culling_plane))
+	.function("get_vbuffer",		&HexaLab::Visualizer::get_vbuffer)
+	.function("get_vbuffer_size",	&HexaLab::Visualizer::get_vbuffer)
+	.function("get_ibuffer",		&HexaLab::Visualizer::get_vbuffer)
+	.function("get_ibuffer_size",	&HexaLab::Visualizer::get_vbuffer)
+    ;
+}
