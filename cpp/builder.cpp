@@ -17,29 +17,29 @@ namespace HexaLab {
             e = search_result->second.idx;
         } else {
             e = s_mesh->edges.size();
-            Mesh::Edge edge;
+            Edge edge;
             edge.dart = s_mesh->darts.size();
             s_mesh->edges.push_back(edge);
             edges_map.insert(std::make_pair(indices, e));
         }
 
         // Vertex A
-        Mesh::Vert& a = s_mesh->verts[std::get<0>(indices)];
+        Vert& a = s_mesh->verts[std::get<0>(indices)];
         if (a.dart == -1)   // Store the first dart on the vertex in the vertex
             a.dart = s_mesh->darts.size();
         s_mesh->darts.emplace_back();
-        Mesh::Dart& d1 = s_mesh->darts.back();
+        Dart& d1 = s_mesh->darts.back();
         d1.hexa = h;
         d1.face = f;
         d1.edge = e;
         d1.vert = std::get<0>(indices);
 
         // Vertex B
-        Mesh::Vert& b = s_mesh->verts[std::get<1>(indices)];
+        Vert& b = s_mesh->verts[std::get<1>(indices)];
         if (b.dart == -1)   // Store the first dart on the vertex in the vertex
             b.dart = s_mesh->darts.size();
         s_mesh->darts.emplace_back();
-        Mesh::Dart& d2 = s_mesh->darts.back();
+        Dart& d2 = s_mesh->darts.back();
         d2.hexa = h;
         d2.face = f;
         d2.edge = e;
@@ -50,11 +50,11 @@ namespace HexaLab {
         s_mesh->darts[s_mesh->darts.size() - 2].vert_neighbor = s_mesh->darts.size() - 1;
     }
 
-    Builder::Hexa::Face Builder::opposite(Hexa::Face face) {
-        return (Hexa::Face)((face + 3) % 6);
+    Builder::EFace Builder::opposite(EFace face) {
+        return (EFace)((face + 3) % 6);
     }
 
-    void Builder::add_face(Index h, Hexa::Face face_enum, IndexQuad indices, Face::Hexa hexa_enum) {
+    void Builder::add_face(Index h, EFace face_enum, IndexQuad indices, EHexa hexa_enum) {
         Index f = -1;
         auto search_result = faces_map.find(indices);
         if (search_result != faces_map.end()) {
@@ -62,35 +62,35 @@ namespace HexaLab {
             Index* hexas = search_result->second.hexas;
 
             Index h2 = hexas[!hexa_enum];
-            Hexa::Face h2_face = opposite(face_enum);
+            EFace h2_face = opposite(face_enum);
 
             hexas[hexa_enum] = h;            
             s_mesh->hexas[h].neighbors[face_enum] = h2;
             s_mesh->hexas[h2].neighbors[h2_face] = h;
 
             Index base_idx = h2 * 48;
-            Mesh::Dart* base = s_mesh->darts.data() + base_idx;
-            base[8 * h2_face + Face::Dart::TopRight].hexa_neighbor = base_idx + 8 * face_enum + Face::Dart::TopRight;
-            base[8 * h2_face + Face::Dart::TopLeft].hexa_neighbor = base_idx + 8 * face_enum + Face::Dart::TopLeft;
-            base[8 * h2_face + Face::Dart::LeftTop].hexa_neighbor = base_idx + 8 * face_enum + Face::Dart::LeftTop;
-            base[8 * h2_face + Face::Dart::LeftBot].hexa_neighbor = base_idx + 8 * face_enum + Face::Dart::LeftBot;
-            base[8 * h2_face + Face::Dart::BotLeft].hexa_neighbor = base_idx + 8 * face_enum + Face::Dart::BotLeft;
-            base[8 * h2_face + Face::Dart::BotRight].hexa_neighbor = base_idx + 8 * face_enum + Face::Dart::BotRight;
-            base[8 * h2_face + Face::Dart::RightBot].hexa_neighbor = base_idx + 8 * face_enum + Face::Dart::RightBot;
-            base[8 * h2_face + Face::Dart::RightTop].hexa_neighbor = base_idx + 8 * face_enum + Face::Dart::RightTop;
+            Dart* base = s_mesh->darts.data() + base_idx;
+            base[8 * h2_face + EDart::TopRight].hexa_neighbor = base_idx + 8 * face_enum + EDart::TopRight;
+            base[8 * h2_face + EDart::TopLeft].hexa_neighbor = base_idx + 8 * face_enum + EDart::TopLeft;
+            base[8 * h2_face + EDart::LeftTop].hexa_neighbor = base_idx + 8 * face_enum + EDart::LeftTop;
+            base[8 * h2_face + EDart::LeftBot].hexa_neighbor = base_idx + 8 * face_enum + EDart::LeftBot;
+            base[8 * h2_face + EDart::BotLeft].hexa_neighbor = base_idx + 8 * face_enum + EDart::BotLeft;
+            base[8 * h2_face + EDart::BotRight].hexa_neighbor = base_idx + 8 * face_enum + EDart::BotRight;
+            base[8 * h2_face + EDart::RightBot].hexa_neighbor = base_idx + 8 * face_enum + EDart::RightBot;
+            base[8 * h2_face + EDart::RightTop].hexa_neighbor = base_idx + 8 * face_enum + EDart::RightTop;
 
-            base[8 * face_enum + Face::Dart::TopRight].hexa_neighbor = base_idx + 8 * h2_face + Face::Dart::TopRight;
-            base[8 * face_enum + Face::Dart::TopLeft].hexa_neighbor = base_idx + 8 * h2_face + Face::Dart::TopLeft;
-            base[8 * face_enum + Face::Dart::LeftTop].hexa_neighbor = base_idx + 8 * h2_face + Face::Dart::LeftTop;
-            base[8 * face_enum + Face::Dart::LeftBot].hexa_neighbor = base_idx + 8 * h2_face + Face::Dart::LeftBot;
-            base[8 * face_enum + Face::Dart::BotLeft].hexa_neighbor = base_idx + 8 * h2_face + Face::Dart::BotLeft;
-            base[8 * face_enum + Face::Dart::BotRight].hexa_neighbor = base_idx + 8 * h2_face + Face::Dart::BotRight;
-            base[8 * face_enum + Face::Dart::RightBot].hexa_neighbor = base_idx + 8 * h2_face + Face::Dart::RightBot;
-            base[8 * face_enum + Face::Dart::RightTop].hexa_neighbor = base_idx + 8 * h2_face + Face::Dart::RightTop;
+            base[8 * face_enum + EDart::TopRight].hexa_neighbor = base_idx + 8 * h2_face + EDart::TopRight;
+            base[8 * face_enum + EDart::TopLeft].hexa_neighbor = base_idx + 8 * h2_face + EDart::TopLeft;
+            base[8 * face_enum + EDart::LeftTop].hexa_neighbor = base_idx + 8 * h2_face + EDart::LeftTop;
+            base[8 * face_enum + EDart::LeftBot].hexa_neighbor = base_idx + 8 * h2_face + EDart::LeftBot;
+            base[8 * face_enum + EDart::BotLeft].hexa_neighbor = base_idx + 8 * h2_face + EDart::BotLeft;
+            base[8 * face_enum + EDart::BotRight].hexa_neighbor = base_idx + 8 * h2_face + EDart::BotRight;
+            base[8 * face_enum + EDart::RightBot].hexa_neighbor = base_idx + 8 * h2_face + EDart::RightBot;
+            base[8 * face_enum + EDart::RightTop].hexa_neighbor = base_idx + 8 * h2_face + EDart::RightTop;
         } else {
             // face not found, insert
             f = s_mesh->faces.size();
-            Mesh::Face face;
+            Face face;
             face.dart = s_mesh->darts.size();
             s_mesh->faces.push_back(face);
             FaceRef f_ref(f);
@@ -105,116 +105,116 @@ namespace HexaLab {
         add_edge(h, f, std::make_tuple(std::get<3>(indices), std::get<0>(indices)));
 
         Index base_idx = s_mesh->darts.size() - 8;
-        Mesh::Dart* base = s_mesh->darts.data() + base_idx;
-        base[Face::Dart::RightTop].edge_neighbor = base_idx + Face::Dart::TopRight;
-        base[Face::Dart::TopRight].edge_neighbor = base_idx + Face::Dart::RightTop;
-        base[Face::Dart::TopLeft].edge_neighbor = base_idx + Face::Dart::LeftTop;
-        base[Face::Dart::LeftTop].edge_neighbor = base_idx + Face::Dart::TopLeft;
-        base[Face::Dart::LeftBot].edge_neighbor = base_idx + Face::Dart::BotLeft;
-        base[Face::Dart::BotLeft].edge_neighbor = base_idx + Face::Dart::LeftBot;
-        base[Face::Dart::BotRight].edge_neighbor = base_idx + Face::Dart::RightBot;
-        base[Face::Dart::RightBot].edge_neighbor = base_idx + Face::Dart::BotRight;
+        Dart* base = s_mesh->darts.data() + base_idx;
+        base[EDart::RightTop].edge_neighbor = base_idx + EDart::TopRight;
+        base[EDart::TopRight].edge_neighbor = base_idx + EDart::RightTop;
+        base[EDart::TopLeft].edge_neighbor = base_idx + EDart::LeftTop;
+        base[EDart::LeftTop].edge_neighbor = base_idx + EDart::TopLeft;
+        base[EDart::LeftBot].edge_neighbor = base_idx + EDart::BotLeft;
+        base[EDart::BotLeft].edge_neighbor = base_idx + EDart::LeftBot;
+        base[EDart::BotRight].edge_neighbor = base_idx + EDart::RightBot;
+        base[EDart::RightBot].edge_neighbor = base_idx + EDart::BotRight;
     }
 
     void Builder::add_hexa(MeshData::Hexa hexa) {
         Index h = s_mesh->hexas.size();
         s_mesh->hexas.emplace_back();
-        Mesh::Hexa& mesh_hexa = s_mesh->hexas.back();
+        Hexa& mesh_hexa = s_mesh->hexas.back();
         mesh_hexa.dart = s_mesh->darts.size();
 
-        // Order matters here ! sort it Hexa::Face - wise.
+        // Order matters here ! sort it EFace - wise.
         IndexQuad face;
-        face = std::make_tuple(hexa.verts[Hexa::Vert::NearBotLeft],
-                               hexa.verts[Hexa::Vert::FarBotLeft],
-                               hexa.verts[Hexa::Vert::FarTopLeft],
-                               hexa.verts[Hexa::Vert::NearTopLeft]);
-        add_face(h, Hexa::Face::Left, face, Face::Hexa::Back);
+        face = std::make_tuple(hexa.verts[EVert::NearBotLeft],
+                               hexa.verts[EVert::FarBotLeft],
+                               hexa.verts[EVert::FarTopLeft],
+                               hexa.verts[EVert::NearTopLeft]);
+        add_face(h, EFace::Left, face, EHexa::Back);
 
-        face = std::make_tuple(hexa.verts[Hexa::Vert::FarBotRight],
-                               hexa.verts[Hexa::Vert::FarBotLeft],
-                               hexa.verts[Hexa::Vert::NearBotLeft],
-                               hexa.verts[Hexa::Vert::NearBotRight]);
-        add_face(h, Hexa::Face::Bottom, face, Face::Hexa::Back);
+        face = std::make_tuple(hexa.verts[EVert::FarBotRight],
+                               hexa.verts[EVert::FarBotLeft],
+                               hexa.verts[EVert::NearBotLeft],
+                               hexa.verts[EVert::NearBotRight]);
+        add_face(h, EFace::Bottom, face, EHexa::Back);
 
-        face = std::make_tuple(hexa.verts[Hexa::Vert::NearBotRight],
-                               hexa.verts[Hexa::Vert::NearBotLeft],
-                               hexa.verts[Hexa::Vert::NearTopLeft],
-                               hexa.verts[Hexa::Vert::NearTopRight]);
-        add_face(h, Hexa::Face::Near, face, Face::Hexa::Back);
+        face = std::make_tuple(hexa.verts[EVert::NearBotRight],
+                               hexa.verts[EVert::NearBotLeft],
+                               hexa.verts[EVert::NearTopLeft],
+                               hexa.verts[EVert::NearTopRight]);
+        add_face(h, EFace::Near, face, EHexa::Back);
 
-        face = std::make_tuple(hexa.verts[Hexa::Vert::NearBotRight],
-                               hexa.verts[Hexa::Vert::FarBotRight],
-                               hexa.verts[Hexa::Vert::FarTopRight],
-                               hexa.verts[Hexa::Vert::NearTopRight]);
-        add_face(h, Hexa::Face::Right, face, Face::Hexa::Front);
+        face = std::make_tuple(hexa.verts[EVert::NearBotRight],
+                               hexa.verts[EVert::FarBotRight],
+                               hexa.verts[EVert::FarTopRight],
+                               hexa.verts[EVert::NearTopRight]);
+        add_face(h, EFace::Right, face, EHexa::Front);
 
-        face = std::make_tuple(hexa.verts[Hexa::Vert::FarTopRight],
-                               hexa.verts[Hexa::Vert::FarTopLeft],
-                               hexa.verts[Hexa::Vert::NearTopLeft],
-                               hexa.verts[Hexa::Vert::NearTopRight]);
-        add_face(h, Hexa::Face::Top, face, Face::Hexa::Front);
+        face = std::make_tuple(hexa.verts[EVert::FarTopRight],
+                               hexa.verts[EVert::FarTopLeft],
+                               hexa.verts[EVert::NearTopLeft],
+                               hexa.verts[EVert::NearTopRight]);
+        add_face(h, EFace::Top, face, EHexa::Front);
 
-        face = std::make_tuple(hexa.verts[Hexa::Vert::FarBotRight],
-                               hexa.verts[Hexa::Vert::FarBotLeft],
-                               hexa.verts[Hexa::Vert::FarTopLeft],
-                               hexa.verts[Hexa::Vert::FarTopRight]);
-        add_face(h, Hexa::Face::Far, face, Face::Hexa::Front);
+        face = std::make_tuple(hexa.verts[EVert::FarBotRight],
+                               hexa.verts[EVert::FarBotLeft],
+                               hexa.verts[EVert::FarTopLeft],
+                               hexa.verts[EVert::FarTopRight]);
+        add_face(h, EFace::Far, face, EHexa::Front);
 
         Index base_idx = s_mesh->darts.size() - 48;
-        Mesh::Dart* base = s_mesh->darts.data() + base_idx;
-        base[8 * Hexa::Face::Left + Face::Dart::RightBot].face_neighbor = base_idx + 8 * Hexa::Face::Near + Face::Dart::LeftBot;
-        base[8 * Hexa::Face::Left + Face::Dart::BotRight].face_neighbor = base_idx + 8 * Hexa::Face::Bottom + Face::Dart::LeftTop;
-        base[8 * Hexa::Face::Left + Face::Dart::BotLeft].face_neighbor = base_idx + 8 * Hexa::Face::Bottom + Face::Dart::LeftBot;
-        base[8 * Hexa::Face::Left + Face::Dart::LeftBot].face_neighbor = base_idx + 8 * Hexa::Face::Far + Face::Dart::LeftBot;
-        base[8 * Hexa::Face::Left + Face::Dart::LeftTop].face_neighbor = base_idx + 8 * Hexa::Face::Far + Face::Dart::LeftTop;
-        base[8 * Hexa::Face::Left + Face::Dart::TopLeft].face_neighbor = base_idx + 8 * Hexa::Face::Top + Face::Dart::LeftBot;
-        base[8 * Hexa::Face::Left + Face::Dart::TopRight].face_neighbor = base_idx + 8 * Hexa::Face::Top + Face::Dart::LeftTop;
-        base[8 * Hexa::Face::Left + Face::Dart::RightTop].face_neighbor = base_idx + 8 * Hexa::Face::Near + Face::Dart::LeftTop;
+        Dart* base = s_mesh->darts.data() + base_idx;
+        base[8 * EFace::Left + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Near + EDart::LeftBot;
+        base[8 * EFace::Left + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::LeftTop;
+        base[8 * EFace::Left + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::LeftBot;
+        base[8 * EFace::Left + EDart::LeftBot].face_neighbor = base_idx + 8 * EFace::Far + EDart::LeftBot;
+        base[8 * EFace::Left + EDart::LeftTop].face_neighbor = base_idx + 8 * EFace::Far + EDart::LeftTop;
+        base[8 * EFace::Left + EDart::TopLeft].face_neighbor = base_idx + 8 * EFace::Top + EDart::LeftBot;
+        base[8 * EFace::Left + EDart::TopRight].face_neighbor = base_idx + 8 * EFace::Top + EDart::LeftTop;
+        base[8 * EFace::Left + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Near + EDart::LeftTop;
 
-        base[8 * Hexa::Face::Right + Face::Dart::RightBot].face_neighbor = base_idx + 8 * Hexa::Face::Near + Face::Dart::RightBot;
-        base[8 * Hexa::Face::Right + Face::Dart::BotRight].face_neighbor = base_idx + 8 * Hexa::Face::Bottom + Face::Dart::RightTop;
-        base[8 * Hexa::Face::Right + Face::Dart::BotLeft].face_neighbor = base_idx + 8 * Hexa::Face::Bottom + Face::Dart::RightBot;
-        base[8 * Hexa::Face::Right + Face::Dart::LeftBot].face_neighbor = base_idx + 8 * Hexa::Face::Far + Face::Dart::RightBot;
-        base[8 * Hexa::Face::Right + Face::Dart::LeftTop].face_neighbor = base_idx + 8 * Hexa::Face::Far + Face::Dart::RightTop;
-        base[8 * Hexa::Face::Right + Face::Dart::TopLeft].face_neighbor = base_idx + 8 * Hexa::Face::Top + Face::Dart::RightBot;
-        base[8 * Hexa::Face::Right + Face::Dart::TopRight].face_neighbor = base_idx + 8 * Hexa::Face::Top + Face::Dart::RightTop;
-        base[8 * Hexa::Face::Right + Face::Dart::RightTop].face_neighbor = base_idx + 8 * Hexa::Face::Near + Face::Dart::RightTop;
+        base[8 * EFace::Right + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Near + EDart::RightBot;
+        base[8 * EFace::Right + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::RightTop;
+        base[8 * EFace::Right + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::RightBot;
+        base[8 * EFace::Right + EDart::LeftBot].face_neighbor = base_idx + 8 * EFace::Far + EDart::RightBot;
+        base[8 * EFace::Right + EDart::LeftTop].face_neighbor = base_idx + 8 * EFace::Far + EDart::RightTop;
+        base[8 * EFace::Right + EDart::TopLeft].face_neighbor = base_idx + 8 * EFace::Top + EDart::RightBot;
+        base[8 * EFace::Right + EDart::TopRight].face_neighbor = base_idx + 8 * EFace::Top + EDart::RightTop;
+        base[8 * EFace::Right + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Near + EDart::RightTop;
 
-        base[8 * Hexa::Face::Top + Face::Dart::RightBot].face_neighbor = base_idx + 8 * Hexa::Face::Right + Face::Dart::TopLeft;
-        base[8 * Hexa::Face::Top + Face::Dart::BotRight].face_neighbor = base_idx + 8 * Hexa::Face::Far + Face::Dart::TopRight;
-        base[8 * Hexa::Face::Top + Face::Dart::BotLeft].face_neighbor = base_idx + 8 * Hexa::Face::Far + Face::Dart::TopLeft;
-        base[8 * Hexa::Face::Top + Face::Dart::LeftBot].face_neighbor = base_idx + 8 * Hexa::Face::Left + Face::Dart::TopLeft;
-        base[8 * Hexa::Face::Top + Face::Dart::LeftTop].face_neighbor = base_idx + 8 * Hexa::Face::Left + Face::Dart::TopRight;
-        base[8 * Hexa::Face::Top + Face::Dart::TopLeft].face_neighbor = base_idx + 8 * Hexa::Face::Near + Face::Dart::TopLeft;
-        base[8 * Hexa::Face::Top + Face::Dart::TopRight].face_neighbor = base_idx + 8 * Hexa::Face::Near + Face::Dart::TopRight;
-        base[8 * Hexa::Face::Top + Face::Dart::RightTop].face_neighbor = base_idx + 8 * Hexa::Face::Right + Face::Dart::TopRight;
+        base[8 * EFace::Top + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Right + EDart::TopLeft;
+        base[8 * EFace::Top + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Far + EDart::TopRight;
+        base[8 * EFace::Top + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Far + EDart::TopLeft;
+        base[8 * EFace::Top + EDart::LeftBot].face_neighbor = base_idx + 8 * EFace::Left + EDart::TopLeft;
+        base[8 * EFace::Top + EDart::LeftTop].face_neighbor = base_idx + 8 * EFace::Left + EDart::TopRight;
+        base[8 * EFace::Top + EDart::TopLeft].face_neighbor = base_idx + 8 * EFace::Near + EDart::TopLeft;
+        base[8 * EFace::Top + EDart::TopRight].face_neighbor = base_idx + 8 * EFace::Near + EDart::TopRight;
+        base[8 * EFace::Top + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Right + EDart::TopRight;
 
-        base[8 * Hexa::Face::Bottom + Face::Dart::RightBot].face_neighbor = base_idx + 8 * Hexa::Face::Right + Face::Dart::BotLeft;
-        base[8 * Hexa::Face::Bottom + Face::Dart::BotRight].face_neighbor = base_idx + 8 * Hexa::Face::Far + Face::Dart::BotRight;
-        base[8 * Hexa::Face::Bottom + Face::Dart::BotLeft].face_neighbor = base_idx + 8 * Hexa::Face::Far + Face::Dart::BotLeft;
-        base[8 * Hexa::Face::Bottom + Face::Dart::LeftBot].face_neighbor = base_idx + 8 * Hexa::Face::Left + Face::Dart::BotLeft;
-        base[8 * Hexa::Face::Bottom + Face::Dart::LeftTop].face_neighbor = base_idx + 8 * Hexa::Face::Left + Face::Dart::BotRight;
-        base[8 * Hexa::Face::Bottom + Face::Dart::TopLeft].face_neighbor = base_idx + 8 * Hexa::Face::Near + Face::Dart::BotLeft;
-        base[8 * Hexa::Face::Bottom + Face::Dart::TopRight].face_neighbor = base_idx + 8 * Hexa::Face::Near + Face::Dart::BotRight;
-        base[8 * Hexa::Face::Bottom + Face::Dart::RightTop].face_neighbor = base_idx + 8 * Hexa::Face::Right + Face::Dart::BotRight;
+        base[8 * EFace::Bottom + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Right + EDart::BotLeft;
+        base[8 * EFace::Bottom + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Far + EDart::BotRight;
+        base[8 * EFace::Bottom + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Far + EDart::BotLeft;
+        base[8 * EFace::Bottom + EDart::LeftBot].face_neighbor = base_idx + 8 * EFace::Left + EDart::BotLeft;
+        base[8 * EFace::Bottom + EDart::LeftTop].face_neighbor = base_idx + 8 * EFace::Left + EDart::BotRight;
+        base[8 * EFace::Bottom + EDart::TopLeft].face_neighbor = base_idx + 8 * EFace::Near + EDart::BotLeft;
+        base[8 * EFace::Bottom + EDart::TopRight].face_neighbor = base_idx + 8 * EFace::Near + EDart::BotRight;
+        base[8 * EFace::Bottom + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Right + EDart::BotRight;
 
-        base[8 * Hexa::Face::Near + Face::Dart::RightBot].face_neighbor = base_idx + 8 * Hexa::Face::Right + Face::Dart::RightBot;
-        base[8 * Hexa::Face::Near + Face::Dart::BotRight].face_neighbor = base_idx + 8 * Hexa::Face::Bottom + Face::Dart::TopRight;
-        base[8 * Hexa::Face::Near + Face::Dart::BotLeft].face_neighbor = base_idx + 8 * Hexa::Face::Bottom + Face::Dart::TopLeft;
-        base[8 * Hexa::Face::Near + Face::Dart::LeftBot].face_neighbor = base_idx + 8 * Hexa::Face::Left + Face::Dart::RightBot;
-        base[8 * Hexa::Face::Near + Face::Dart::LeftTop].face_neighbor = base_idx + 8 * Hexa::Face::Left + Face::Dart::RightTop;
-        base[8 * Hexa::Face::Near + Face::Dart::TopLeft].face_neighbor = base_idx + 8 * Hexa::Face::Top + Face::Dart::TopLeft;
-        base[8 * Hexa::Face::Near + Face::Dart::TopRight].face_neighbor = base_idx + 8 * Hexa::Face::Top + Face::Dart::TopRight;
-        base[8 * Hexa::Face::Near + Face::Dart::RightTop].face_neighbor = base_idx + 8 * Hexa::Face::Right + Face::Dart::RightTop;
+        base[8 * EFace::Near + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Right + EDart::RightBot;
+        base[8 * EFace::Near + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::TopRight;
+        base[8 * EFace::Near + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::TopLeft;
+        base[8 * EFace::Near + EDart::LeftBot].face_neighbor = base_idx + 8 * EFace::Left + EDart::RightBot;
+        base[8 * EFace::Near + EDart::LeftTop].face_neighbor = base_idx + 8 * EFace::Left + EDart::RightTop;
+        base[8 * EFace::Near + EDart::TopLeft].face_neighbor = base_idx + 8 * EFace::Top + EDart::TopLeft;
+        base[8 * EFace::Near + EDart::TopRight].face_neighbor = base_idx + 8 * EFace::Top + EDart::TopRight;
+        base[8 * EFace::Near + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Right + EDart::RightTop;
 
-        base[8 * Hexa::Face::Far + Face::Dart::RightBot].face_neighbor = base_idx + 8 * Hexa::Face::Right + Face::Dart::LeftBot;
-        base[8 * Hexa::Face::Far + Face::Dart::BotRight].face_neighbor = base_idx + 8 * Hexa::Face::Bottom + Face::Dart::BotRight;
-        base[8 * Hexa::Face::Far + Face::Dart::BotLeft].face_neighbor = base_idx + 8 * Hexa::Face::Bottom + Face::Dart::BotLeft;
-        base[8 * Hexa::Face::Far + Face::Dart::LeftBot].face_neighbor = base_idx + 8 * Hexa::Face::Left + Face::Dart::LeftBot;
-        base[8 * Hexa::Face::Far + Face::Dart::LeftTop].face_neighbor = base_idx + 8 * Hexa::Face::Left + Face::Dart::LeftTop;
-        base[8 * Hexa::Face::Far + Face::Dart::TopLeft].face_neighbor = base_idx + 8 * Hexa::Face::Top + Face::Dart::BotLeft;
-        base[8 * Hexa::Face::Far + Face::Dart::TopRight].face_neighbor = base_idx + 8 * Hexa::Face::Top + Face::Dart::BotRight;
-        base[8 * Hexa::Face::Far + Face::Dart::RightTop].face_neighbor = base_idx + 8 * Hexa::Face::Right + Face::Dart::LeftTop;
+        base[8 * EFace::Far + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Right + EDart::LeftBot;
+        base[8 * EFace::Far + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::BotRight;
+        base[8 * EFace::Far + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::BotLeft;
+        base[8 * EFace::Far + EDart::LeftBot].face_neighbor = base_idx + 8 * EFace::Left + EDart::LeftBot;
+        base[8 * EFace::Far + EDart::LeftTop].face_neighbor = base_idx + 8 * EFace::Left + EDart::LeftTop;
+        base[8 * EFace::Far + EDart::TopLeft].face_neighbor = base_idx + 8 * EFace::Top + EDart::BotLeft;
+        base[8 * EFace::Far + EDart::TopRight].face_neighbor = base_idx + 8 * EFace::Top + EDart::BotRight;
+        base[8 * EFace::Far + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Right + EDart::LeftTop;
     }
 
     void Builder::build(Mesh& mesh, MeshData& data) {

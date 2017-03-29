@@ -30,47 +30,41 @@ namespace HexaLab {
             }
         };
 
-        struct Face {
-            Index hexa;
-            Index verts[4];
-
-            enum Hexa {
-                Front = 0,
-                Back,
-            };
-
-            enum Dart {
-                BotRight = 0,
-                BotLeft,
-                LeftBot,
-                LeftTop,
-                TopLeft,
-                TopRight,
-                RightTop,
-                RightBot,
-            };
+        
+        enum EHexa {
+            Front = 0,
+            Back,
         };
 
-        struct Hexa {
-            enum Face {
-                Left = 0,
-                Bottom,
-                Near,
-                Right,
-                Top,
-                Far,
-            };
+        enum EDart {
+            BotRight = 0,
+            BotLeft,
+            LeftBot,
+            LeftTop,
+            TopLeft,
+            TopRight,
+            RightTop,
+            RightBot,
+        };
 
-            enum Vert {
-                NearBotRight = 0,
-                NearBotLeft,
-                NearTopLeft,
-                NearTopRight,
-                FarBotRight,
-                FarBotLeft,
-                FarTopLeft,
-                FarTopRight,
-            };
+        enum EFace {
+            Left = 0,
+            Bottom,
+            Near,
+            Right,
+            Top,
+            Far,
+        };
+
+        enum EVert {
+            NearBotRight = 0,
+            NearBotLeft,
+            NearTopLeft,
+            NearTopRight,
+            FarBotRight,
+            FarBotLeft,
+            FarTopLeft,
+            FarTopRight,
         };
 
         static std::unordered_map<IndexPair, EdgeRef> edges_map;
@@ -79,9 +73,9 @@ namespace HexaLab {
         static Mesh* s_mesh;
         static MeshData* s_data;
 
-        static Hexa::Face opposite(Hexa::Face face);
+        static EFace opposite(EFace face);
         static void add_edge(Index h, Index f, IndexPair indices);
-        static void add_face(Index h, Hexa::Face face_enum, IndexQuad indices, Face::Hexa hexa_enum);
+        static void add_face(Index h, EFace face_enum, IndexQuad indices, EHexa hexa_enum);
         static void add_hexa(MeshData::Hexa hexa);
 
     public:
