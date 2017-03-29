@@ -8,9 +8,9 @@
 
 namespace HexaLab {
     class Visualizer {
-        using Vert = Eigen::Vector3f;
+        using float3 = Eigen::Vector3f;
 
-        std::vector<Vert> vbuffer;
+        std::vector<float3> vbuffer;
         std::vector<Index> ibuffer;
         Eigen::Hyperplane<float, 3> plane;
         Mesh* mesh = nullptr;
@@ -18,9 +18,16 @@ namespace HexaLab {
     public:
         void set_mesh(Mesh& mesh) { this->mesh = &mesh; }
         void set_culling_plane(const Eigen::Hyperplane<float, 3>& plane) { this->plane = plane; }
-        void set_culling_plane(Vert normal, Vert position) { this->plane = Eigen::Hyperplane<float, 3>(normal, position); }
-        void set_culling_plane(Vert normal, float d) { this->plane = Eigen::Hyperplane<float, 3>(normal, d); }
-        void set_culling_plane(float nx, float ny, float nz, float d) { this->plane = Eigen::Hyperplane<float, 3>(Vert(nx, ny, nz), d); }
+        void set_culling_plane(float3 normal, float3 position) { this->plane = Eigen::Hyperplane<float, 3>(normal, position); }
+        void set_culling_plane(float3 normal, float d) { this->plane = Eigen::Hyperplane<float, 3>(normal, d); }
+        void set_culling_plane(float nx, float ny, float nz, float x, float y, float z) { this->plane = Eigen::Hyperplane<float, 3>(float3(nx, ny, nz), float3(x, y, z)); }
+        void set_culling_plane(float nx, float ny, float nz, float s) {
+            float size = mesh->get_aabb().diagonal().norm();
+            float3 center = mesh->get_aabb().center();
+            float3 normal = float3(nx, ny, nz);
+            float3 pos = center + normal * (size * s - size / 2);
+            set_culling_plane(normal, pos);
+        }
 
         void update_vbuffer();
         void update_ibuffer();
@@ -29,6 +36,8 @@ namespace HexaLab {
         int get_vbuffer_size() { return this->vbuffer.size(); }
         js_ptr get_ibuffer() { return (js_ptr)this->ibuffer.data(); }
         int get_ibuffer_size() { return this->ibuffer.size(); }
+
+        int get_mesh_vsize() { return this->mesh->get_verts().size(); }
     };
 }
 

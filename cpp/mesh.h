@@ -14,7 +14,6 @@ namespace HexaLab {
 
     struct Hexa {
         Index dart;
-        Index neighbors[6] = { -1, -1, -1, -1, -1, -1};
         bool is_visible;
     };
 
@@ -60,21 +59,17 @@ namespace HexaLab {
         Dart& get_dart(Index i) { return this->darts[i]; }
 
         AlignedBox3f& get_aabb() { return this->aabb; }
-		float get_center_x() { return this->aabb.center().x(); }
-		float get_center_y() { return this->aabb.center().y(); }
-		float get_center_z() { return this->aabb.center().z(); }
-		float get_diagonal_size() { return this->aabb.diagonal().norm(); }
 
         MeshNavigator navigate(Dart& dart) { return MeshNavigator(&dart, &dart, this); }
-        MeshNavigator navigate(Hexa& hexa) { Dart& dart = get_dart(hexa); return navigate(dart); }
-        MeshNavigator navigate(Face& face) { Dart& dart = get_dart(face); return navigate(dart); }
-        MeshNavigator navigate(Edge& edge) { Dart& dart = get_dart(edge); return navigate(dart); }
-        MeshNavigator navigate(Vert& vert) { Dart& dart = get_dart(vert); return navigate(dart); }
+        MeshNavigator navigate(Hexa& hexa) { Dart& d = get_dart(hexa); return navigate(d); }
+        MeshNavigator navigate(Face& face) { Dart& d = get_dart(face); return navigate(d); }
+        MeshNavigator navigate(Edge& edge) { Dart& d = get_dart(edge); return navigate(d); }
+        MeshNavigator navigate(Vert& vert) { Dart& d = get_dart(vert); return navigate(d); }
 
-        MeshNavigator flipH(Dart& dart) { return MeshNavigator(&dart, &get_dart(dart.hexa_neighbor), this); }
-        MeshNavigator flipF(Dart& dart) { return MeshNavigator(&dart, &get_dart(dart.face_neighbor), this); }
-        MeshNavigator flipE(Dart& dart) { return MeshNavigator(&dart, &get_dart(dart.edge_neighbor), this); }
-        MeshNavigator flipV(Dart& dart) { return MeshNavigator(&dart, &get_dart(dart.vert_neighbor), this); }
+        MeshNavigator flipH(const Dart& dart) { Dart& d = get_dart(dart.hexa_neighbor); return navigate(d); }
+        MeshNavigator flipF(const Dart& dart) { Dart& d = get_dart(dart.face_neighbor); return navigate(d); }
+        MeshNavigator flipE(const Dart& dart) { Dart& d = get_dart(dart.edge_neighbor); return navigate(d); }
+        MeshNavigator flipV(const Dart& dart) { Dart& d = get_dart(dart.vert_neighbor); return navigate(d); }
 
         void validate();
 	};

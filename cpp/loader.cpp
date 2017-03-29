@@ -48,7 +48,7 @@ namespace HexaLab {
                 HL_LOG("Reading %d vertices...\n", vertices_count);
                 data.verts.reserve(vertices_count);
                 for (int i = 0; i < vertices_count; ++i) {
-                    MeshData::Vert v;
+                    Eigen::Vector3f v;
                     float x;
                     if (!(stream >> v.x() >> v.y() >> v.z() >> x)) {
                         HL_LOG("ERROR: malformed mesh file. Unexpected vertex data format.\n");

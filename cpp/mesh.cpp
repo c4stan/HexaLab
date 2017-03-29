@@ -32,6 +32,10 @@ namespace HexaLab {
                 && a.edge == v2.edge
                 && a.vert == v2.vert);
 
+            for (unsigned int j = 0; j < verts.size(); ++j) {
+                assert(verts[j].dart != -1);
+            }
+
             // TODO add more asserts
         }
     }

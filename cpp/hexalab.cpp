@@ -6,16 +6,45 @@
 #include <eigen/dense>
 #include <eigen/geometry>
 
+using namespace HexaLab;
+
+Mesh mesh;
+
+// split and export MeshData ?
+class Importer {
+public:
+	static Result import(std::string path, Visualizer& visualizer) {
+		HL_LOG("Loading %s...\n", path.c_str());
+		auto data = Loader::load(path);
+		if (!data.is_good()) {
+			return Result::Error;
+		}
+		
+		HL_LOG("Processing...\n");
+		Builder::build(mesh, data);
+
+		mesh.validate();
+
+		visualizer.set_mesh(mesh);
+
+		return Result::Success;
+	}
+};
+
+
 /*
 int main() {
-	using namespace HexaLab;
+	Visualizer v;
+	Result r = Importer::import("data/Block.mesh", v);
+	assert(r == Result::Success);
+	v.update_vbuffer();
+	v.update_ibuffer();
 
-	Mesh m;
-	MeshData data = Loader::load("data/Block.mesh");
-	Builder::build(m, data);
-	m.validate();
+	HL_LOG("%d %d\n", v.get_vbuffer_size(), v.get_ibuffer_size());
 }
 */
+
+
 
 
 // Emscripten
@@ -23,6 +52,7 @@ int main() {
 #include <emscripten/bind.h>
 
 using namespace emscripten;
+
 
 EMSCRIPTEN_BINDINGS(Result) {
     enum_<HexaLab::Result>("Result")
@@ -44,28 +74,11 @@ EMSCRIPTEN_BINDINGS(Plane) {
 	;
 }
 
-EMSCRIPTEN_BINDINGS(Loader) {
-	class_<HexaLab::Loader>("Loader")
+EMSCRIPTEN_BINDINGS(Importer) {
+	class_<Importer>("Importer")
 	.constructor<>()
-	.class_function("load", &HexaLab::Loader::load)
+	.class_function("import", &Importer::import, allow_raw_pointers())
 	;
-}
-
-EMSCRIPTEN_BINDINGS(Builder) {
-	class_<HexaLab::Builder>("Builder")
-	.constructor<>()
-	.class_function("build", &HexaLab::Builder::build)
-	;
-}
-
-EMSCRIPTEN_BINDINGS(Mesh) {
-	class_<HexaLab::Mesh>("Mesh")
-    .constructor<>()
-	.function("get_center_x", 		&HexaLab::Mesh::get_center_x)
-	.function("get_center_y", 		&HexaLab::Mesh::get_center_y)
-	.function("get_center_z", 		&HexaLab::Mesh::get_center_z)
-	.function("get_diagonal_size",	&HexaLab::Mesh::get_diagonal_size)
-    ;
 }
 
 EMSCRIPTEN_BINDINGS(Visualizer) {
@@ -76,8 +89,8 @@ EMSCRIPTEN_BINDINGS(Visualizer) {
 	.function("update_ibuffer", 	&HexaLab::Visualizer::update_ibuffer)
 	.function("set_culling_plane", 	select_overload<void(float, float, float, float)>(&HexaLab::Visualizer::set_culling_plane))
 	.function("get_vbuffer",		&HexaLab::Visualizer::get_vbuffer)
-	.function("get_vbuffer_size",	&HexaLab::Visualizer::get_vbuffer)
-	.function("get_ibuffer",		&HexaLab::Visualizer::get_vbuffer)
-	.function("get_ibuffer_size",	&HexaLab::Visualizer::get_vbuffer)
+	.function("get_vbuffer_size",	&HexaLab::Visualizer::get_vbuffer_size)
+	.function("get_ibuffer",		&HexaLab::Visualizer::get_ibuffer)
+	.function("get_ibuffer_size",	&HexaLab::Visualizer::get_ibuffer_size)
     ;
 }

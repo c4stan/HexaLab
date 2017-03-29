@@ -12,13 +12,11 @@ namespace HexaLab {
         friend class Loader;
 
     public:
-        using Vert = Eigen::Vector3f;
-
         struct Hexa {
             Index verts[8];
         };
 
-        std::vector<Vert> verts;
+        std::vector<Eigen::Vector3f> verts;
         std::vector<Hexa> hexas;
 
         bool is_good() {

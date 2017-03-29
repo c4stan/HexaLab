@@ -24,26 +24,34 @@ namespace HexaLab {
         }
 
         // Vertex A
-        Vert& a = s_mesh->verts[std::get<0>(indices)];
-        if (a.dart == -1)   // Store the first dart on the vertex in the vertex
+        Index i1 = std::get<0>(indices);
+        assert(s_mesh->verts.capacity() > i1);
+        Vert& a = s_mesh->verts[i1];
+        if (a.dart == -1) {   // Store the first dart on the vertex in the vertex
             a.dart = s_mesh->darts.size();
+            a.position = s_data->verts[i1];
+        }
         s_mesh->darts.emplace_back();
         Dart& d1 = s_mesh->darts.back();
         d1.hexa = h;
         d1.face = f;
         d1.edge = e;
-        d1.vert = std::get<0>(indices);
+        d1.vert = i1;
 
         // Vertex B
-        Vert& b = s_mesh->verts[std::get<1>(indices)];
-        if (b.dart == -1)   // Store the first dart on the vertex in the vertex
+        Index i2 = std::get<1>(indices);
+        assert(s_mesh->verts.capacity() > i2);
+        Vert& b = s_mesh->verts[i2];
+        if (b.dart == -1) {  // Store the first dart on the vertex in the vertex
             b.dart = s_mesh->darts.size();
+            b.position = s_data->verts[i2];
+        }
         s_mesh->darts.emplace_back();
         Dart& d2 = s_mesh->darts.back();
         d2.hexa = h;
         d2.face = f;
         d2.edge = e;
-        d2.vert = std::get<1>(indices);
+        d2.vert = i2;
 
         // Link darts along the edge
         s_mesh->darts[s_mesh->darts.size() - 1].vert_neighbor = s_mesh->darts.size() - 2;
@@ -65,8 +73,6 @@ namespace HexaLab {
             EFace h2_face = opposite(face_enum);
 
             hexas[hexa_enum] = h;            
-            s_mesh->hexas[h].neighbors[face_enum] = h2;
-            s_mesh->hexas[h2].neighbors[h2_face] = h;
 
             Index base_idx = h2 * 48;
             Dart* base = s_mesh->darts.data() + base_idx;
@@ -224,7 +230,7 @@ namespace HexaLab {
         edges_map.clear();
         faces_map.clear();
 
-        mesh.verts.reserve(data.verts.size());
+        mesh.verts.resize(data.verts.size());
 
         for (unsigned int h = 0; h < data.hexas.size(); ++h) {
             add_hexa(data.hexas[h]);

@@ -4,9 +4,12 @@
 
 namespace HexaLab {
     void Visualizer::update_vbuffer() {
-        assert(this->mesh != nullptr);
+        //assert(this->mesh != nullptr);
+
+        this->vbuffer.clear();
         
         auto& verts = this->mesh->get_verts();
+        int k = verts.size();
         for (unsigned int i = 0; i < verts.size(); ++i) {
             this->vbuffer.push_back(verts[i].position);
         }
@@ -21,12 +24,8 @@ namespace HexaLab {
 
             // Try to ignore the hexa if it's surrounded
             bool surrounded = true;
-            for (int j = 0; j < 6; ++j) {
-                if (hexa.neighbors[j] == -1) {
-                    surrounded = false;
-                    break;
-                }
-            }
+            // TODO determine if it's surrounded
+            surrounded = false;
             if (surrounded) {
                 hexa.is_visible = false;
                 continue;
