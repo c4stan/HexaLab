@@ -6,7 +6,7 @@
 
 #define HL_LOG(...) printf(__VA_ARGS__)	
 
-#define HL_ASSERT(cond) if (!(cond)) { return Result::Error; }
+#define HL_ASSERT(cond) if (!(cond)) { return HexaLab::Result::Error; }
 
 namespace HexaLab {
 	using js_ptr = uintptr_t;

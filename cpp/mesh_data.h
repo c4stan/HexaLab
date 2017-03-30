@@ -26,8 +26,8 @@ namespace HexaLab {
         const vector<Vector3f>& get_verts() const { return this->verts; }
         const vector<Hexa>&     get_hexas() const { return this->hexas; }
 
-        const Vector3f& get_vert(Index i) const { return this->verts[i]; }
-        const Hexa&     get_hexa(Index i) const { return this->hexas[i]; }
+        const Vector3f& get_vert(Index i) const { assert(i < this->verts.size()); return this->verts[i]; }
+        const Hexa&     get_hexa(Index i) const { assert(i < this->hexas.size()); return this->hexas[i]; }
 
         bool is_good() { return this->_is_good; }
     };

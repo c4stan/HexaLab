@@ -2,6 +2,7 @@
 
 namespace HexaLab {
     Result Visualizer::import_mesh(std::string path) {
+        
         HL_LOG("Loading %s...\n", path.c_str());
 		auto data = Loader::load(path);
 		if (!data.is_good()) {
@@ -22,8 +23,6 @@ namespace HexaLab {
     }
 
     void Visualizer::update_vbuffer() {
-        //assert(this->mesh != nullptr);
-
         this->vbuffer.clear();
         this->mesh_aabb = AlignedBox3f();
         
@@ -46,14 +45,17 @@ namespace HexaLab {
             bool surrounded = true;
             auto nav = mesh.navigate(hexa);
 
-            const Vert& v1 = nav.vert();
+            const Vert& v0 = nav.vert();
+            //HL_LOG("hexa # %d\n", i);
             do {
                 if (nav.dart().hexa_neighbor == -1) {
                     surrounded = false;
                     break;
                 }
-                nav.flip_vert().flip_edge().flip_face();
-            } while (nav.vert() != v1);
+                nav.flip_vert();
+                nav.flip_edge();
+                nav.flip_face();
+            } while (nav.vert() != v0);
             if (surrounded) {
                 hexa.is_visible = false;
                 continue;
@@ -61,6 +63,7 @@ namespace HexaLab {
 
             // PLANE CULL CHECK
             bool culled = 0;
+            const Vert& v1 = nav.vert();
             do {
                 if (plane.signedDistance(nav.vert().position) < 0) {
                     culled = true;

@@ -14,7 +14,6 @@ namespace HexaLab {
 
         std::vector<float3> vbuffer;
         std::vector<Index> ibuffer;
-        std::vector<float3> face_normals;
         Eigen::Hyperplane<float, 3> plane;
         Mesh mesh;
 		AlignedBox3f mesh_aabb;

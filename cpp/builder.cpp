@@ -25,33 +25,33 @@ namespace HexaLab {
 
         // Vertex A
         Index i1 = std::get<0>(indices);
-        assert(mesh->verts.capacity() > i1);
+        assert(mesh->verts.size() > i1);
         Vert& a = mesh->verts[i1];
         if (a.dart == -1) {   // Store the first dart on the vertex in the vertex
             a.dart = mesh->darts.size();
             a.position = mesh_data->get_vert(i1);
         }
-        mesh->darts.emplace_back();
-        Dart& d1 = mesh->darts.back();
+        Dart d1;
         d1.hexa = h;
         d1.face = f;
         d1.edge = e;
         d1.vert = i1;
+        mesh->darts.push_back(d1);
 
         // Vertex B
         Index i2 = std::get<1>(indices);
-        assert(mesh->verts.capacity() > i2);
+        assert(mesh->verts.size() > i2);
         Vert& b = mesh->verts[i2];
         if (b.dart == -1) {  // Store the first dart on the vertex in the vertex
             b.dart = mesh->darts.size();
             b.position = mesh_data->get_vert(i2);
         }
-        mesh->darts.emplace_back();
-        Dart& d2 = mesh->darts.back();
+        Dart d2;
         d2.hexa = h;
         d2.face = f;
         d2.edge = e;
         d2.vert = i2;
+        mesh->darts.push_back(d2);
 
         // Link darts along the edge
         mesh->darts[mesh->darts.size() - 1].vert_neighbor = mesh->darts.size() - 2;
@@ -99,11 +99,10 @@ namespace HexaLab {
             FaceRef f_ref(f);
             f_ref.hexas[hexa_enum] = h;
             faces_map.insert(std::make_pair(indices, f_ref));
+            Face face;
+            face.dart = mesh->darts.size();
+            mesh->faces.push_back(face);
         }
-
-        Face face;
-        face.dart = mesh->darts.size();
-        mesh->faces.push_back(face);
 
         // Order matters here !
         add_edge(h, f, std::make_tuple(std::get<0>(indices), std::get<1>(indices)));
@@ -111,6 +110,7 @@ namespace HexaLab {
         add_edge(h, f, std::make_tuple(std::get<2>(indices), std::get<3>(indices)));
         add_edge(h, f, std::make_tuple(std::get<3>(indices), std::get<0>(indices)));
 
+        assert(mesh->darts.size() >= 8);
         Index base_idx = mesh->darts.size() - 8;
         Dart* base = mesh->darts.data() + base_idx;
         base[EDart::RightTop].edge_neighbor = base_idx + EDart::TopRight;
@@ -167,6 +167,7 @@ namespace HexaLab {
                                hexa.verts[EVert::FarTopRight]);
         add_face(h, EFace::Far, face, EHexa::Front);
 
+        assert(mesh->darts.size() >= 48);
         Index base_idx = mesh->darts.size() - 48;
         Dart* base = mesh->darts.data() + base_idx;
         base[8 * EFace::Left + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Near + EDart::LeftBot;
@@ -255,40 +256,46 @@ namespace HexaLab {
             HL_ASSERT(dart.edge_neighbor != -1);
             HL_ASSERT(dart.vert_neighbor != -1);
 
-            MeshNavigator nav = mesh.navigate(dart);
-
-            nav.flip_face().flip_face();
-            HL_ASSERT(dart == nav.dart());
-
-            nav.flip_edge().flip_edge();
-            HL_ASSERT(dart == nav.dart());
-
-            nav.flip_vert().flip_vert();
-            HL_ASSERT(dart == nav.dart());
-
             if (dart.hexa_neighbor == -1) {
                 ++surface_darts;
             } else {
                 //nav.flip_hexa().flip_hexa();
                 //HL_ASSERT(dart == nav.dart());
             }
+            
 
             // TODO add more asserts
         }
 
         for (size_t i = 0; i < mesh.get_verts().size(); ++i) {
-            HL_ASSERT(mesh.get_vert(i).dart != -1);
+            Vert& v = mesh.get_vert(i);
+            assert(v.dart != -1);
+            auto nav = mesh.navigate(v);
+            assert(nav.vert() == v);
+            nav.flip_vert().flip_vert();
+            assert(nav.vert() == v);
         }
 
         for (size_t i = 0; i < mesh.get_edges().size(); ++i) {
-            HL_ASSERT(mesh.get_edge(i).dart != -1);
+            Edge& e = mesh.get_edge(i);
+            assert(e.dart != -1);
+            auto nav = mesh.navigate(e);
+            assert(nav.edge() == e);
+            nav.flip_edge().flip_edge();
+            assert(nav.edge() == e);
         }
 
         for (size_t i = 0; i < mesh.get_faces().size(); ++i) {
-            HL_ASSERT(mesh.get_face(i).dart != -1);
+            Face& f = mesh.get_face(i);
+            assert(f.dart != -1);
+            auto nav = mesh.navigate(f);
+            assert(nav.face() == f);
+            nav.flip_face();
+            nav.flip_face();
+            assert(nav.face() == f);
         }
 
-        HL_LOG("[Mesh validator] Surface darts: %d/%d", surface_darts, mesh.get_darts().size());
+        HL_LOG("[Mesh validator] Surface darts: %d/%d\n", surface_darts, mesh.get_darts().size());
 
         return Result::Success;
     }

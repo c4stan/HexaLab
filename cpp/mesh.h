@@ -15,14 +15,29 @@ namespace HexaLab {
     struct Hexa {
         Index dart = -1;
         bool is_visible;
+
+        bool operator==(const Hexa& other) const {
+            return this->dart == other.dart;
+        }
+        bool operator!=(const Hexa& other) const { return !(*this == other); }
     };
 
     struct Face {
         Index dart = -1;
+
+        bool operator==(const Face& other) const {
+            return this->dart == other.dart;
+        }
+        bool operator!=(const Face& other) const { return !(*this == other); }
     };
 
     struct Edge {
         Index dart = -1;
+
+        bool operator==(const Edge& other) const {
+            return this->dart == other.dart;
+        }
+        bool operator!=(const Edge& other) const { return !(*this == other); }
     };
 
     struct Vert {
