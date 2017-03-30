@@ -96,13 +96,14 @@ namespace HexaLab {
         } else {
             // face not found, insert
             f = mesh->faces.size();
-            Face face;
-            face.dart = mesh->darts.size();
-            mesh->faces.push_back(face);
             FaceRef f_ref(f);
             f_ref.hexas[hexa_enum] = h;
             faces_map.insert(std::make_pair(indices, f_ref));
         }
+
+        Face face;
+        face.dart = mesh->darts.size();
+        mesh->faces.push_back(face);
 
         // Order matters here !
         add_edge(h, f, std::make_tuple(std::get<0>(indices), std::get<1>(indices)));
@@ -242,6 +243,7 @@ namespace HexaLab {
     }
 
     Result Builder::validate(Mesh& mesh) {
+        int surface_darts = 0;
         for (size_t i = 0; i < mesh.get_darts().size(); ++i) {
             Dart& dart = mesh.get_dart(i);
 
@@ -264,6 +266,13 @@ namespace HexaLab {
             nav.flip_vert().flip_vert();
             HL_ASSERT(dart == nav.dart());
 
+            if (dart.hexa_neighbor == -1) {
+                ++surface_darts;
+            } else {
+                //nav.flip_hexa().flip_hexa();
+                //HL_ASSERT(dart == nav.dart());
+            }
+
             // TODO add more asserts
         }
 
@@ -278,6 +287,8 @@ namespace HexaLab {
         for (size_t i = 0; i < mesh.get_faces().size(); ++i) {
             HL_ASSERT(mesh.get_face(i).dart != -1);
         }
+
+        HL_LOG("[Mesh validator] Surface darts: %d/%d", surface_darts, mesh.get_darts().size());
 
         return Result::Success;
     }

@@ -44,10 +44,16 @@ namespace HexaLab {
 
             // PROXIMITY CHECK
             bool surrounded = true;
+            auto nav = mesh.navigate(hexa);
 
-            // TODO determine if it's surrounded
-            surrounded = false;
-            
+            const Vert& v1 = nav.vert();
+            do {
+                if (nav.dart().hexa_neighbor == -1) {
+                    surrounded = false;
+                    break;
+                }
+                nav.flip_vert().flip_edge().flip_face();
+            } while (nav.vert() != v1);
             if (surrounded) {
                 hexa.is_visible = false;
                 continue;
@@ -55,9 +61,6 @@ namespace HexaLab {
 
             // PLANE CULL CHECK
             bool culled = 0;
-            MeshNavigator nav = mesh.navigate(hexa);
-
-            const Vert& v1 = nav.vert();
             do {
                 if (plane.signedDistance(nav.vert().position) < 0) {
                     culled = true;
@@ -87,7 +90,7 @@ namespace HexaLab {
                 continue;
             }
 
-            // DRAW
+             // DRAW
             nav = mesh.navigate(hexa);
             for (int j = 0; j < 4; ++j) {
                 // store the index used as first for both this face's triangles

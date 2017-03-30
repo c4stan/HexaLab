@@ -40,6 +40,7 @@ namespace HexaLab {
         struct FaceRef {
             Index idx;
             Index hexas[2] = { -1, -1};
+            
 
             FaceRef(Index idx) {
                 this->idx = idx;
