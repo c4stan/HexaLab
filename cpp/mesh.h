@@ -28,47 +28,47 @@ namespace HexaLab {
     struct Vert {
         Index dart = -1;
         Vector3f position;
+
+        bool operator==(const Vert& other) const {
+            return this->dart == other.dart
+                && this->position == other.position;    // TODO non necessary ?
+        }
+        bool operator!=(const Vert& other) const { return !(*this == other); }
     };
     
-	class Mesh {
-        friend class Builder;
+class Mesh {
+    friend class Builder;
 
-	private:
         vector<Hexa> hexas;
         vector<Face> faces;
         vector<Edge> edges;
         vector<Vert> verts;
         vector<Dart> darts;
 
-	public:
-        vector<Hexa>& get_hexas() { return this->hexas; }
-        vector<Face>& get_faces() { return this->faces; }
-        vector<Edge>& get_edges() { return this->edges; }
-        vector<Vert>& get_verts() { return this->verts; }
+    public:
+        std::vector<Hexa>& get_hexas() { return this->hexas; }
+        std::vector<Face>& get_faces() { return this->faces; }
+        std::vector<Edge>& get_edges() { return this->edges; }
+        std::vector<Vert>& get_verts() { return this->verts; }
 
         Hexa& get_hexa(Index i) { return this->hexas[i]; }
         Face& get_face(Index i) { return this->faces[i]; }
         Edge& get_edge(Index i) { return this->edges[i]; }
         Vert& get_vert(Index i) { return this->verts[i]; }
 
-        Dart& get_dart(const Hexa& hexa) { return this->darts[hexa.dart]; }
-        Dart& get_dart(const Face& face) { return this->darts[face.dart]; }
-        Dart& get_dart(const Edge& edge) { return this->darts[edge.dart]; }
-        Dart& get_dart(const Vert& vert) { return this->darts[vert.dart]; }
-        Dart& get_dart(Index i) { return this->darts[i]; }
+        std::vector<Dart>& get_darts() { return this->darts; }
 
-        MeshNavigator navigate(Dart& dart) { return MeshNavigator(&dart, &dart, this); }
+        Dart& get_dart(Index i) { return this->darts[i]; }
+        Dart& get_dart(Hexa& hexa) { return this->darts[hexa.dart]; }
+        Dart& get_dart(Face& face) { return this->darts[face.dart]; }
+        Dart& get_dart(Edge& edge) { return this->darts[edge.dart]; }
+        Dart& get_dart(Vert& vert) { return this->darts[vert.dart]; }
+
+        MeshNavigator navigate(Dart& dart) { return MeshNavigator(dart, *this); }
         MeshNavigator navigate(Hexa& hexa) { Dart& d = get_dart(hexa); return navigate(d); }
         MeshNavigator navigate(Face& face) { Dart& d = get_dart(face); return navigate(d); }
         MeshNavigator navigate(Edge& edge) { Dart& d = get_dart(edge); return navigate(d); }
         MeshNavigator navigate(Vert& vert) { Dart& d = get_dart(vert); return navigate(d); }
-
-        MeshNavigator flipH(const Dart& dart) { Dart& d = get_dart(dart.hexa_neighbor); return navigate(d); }
-        MeshNavigator flipF(const Dart& dart) { Dart& d = get_dart(dart.face_neighbor); return navigate(d); }
-        MeshNavigator flipE(const Dart& dart) { Dart& d = get_dart(dart.edge_neighbor); return navigate(d); }
-        MeshNavigator flipV(const Dart& dart) { Dart& d = get_dart(dart.vert_neighbor); return navigate(d); }
-
-        void validate();
 	};
 }
 

@@ -3,6 +3,8 @@
 
 #include "common.h"
 #include "mesh.h"
+#include "loader.h"
+#include "builder.h"
 #include <eigen/dense>
 #include <vector>
 
@@ -13,11 +15,10 @@ namespace HexaLab {
         std::vector<float3> vbuffer;
         std::vector<Index> ibuffer;
         Eigen::Hyperplane<float, 3> plane;
-        Mesh* mesh = nullptr;
+        Mesh mesh;
 		AlignedBox3f mesh_aabb;
 
     public:
-        void set_mesh(Mesh& mesh) { this->mesh = &mesh; }
         void set_culling_plane(const Eigen::Hyperplane<float, 3>& plane) { this->plane = plane; }
         void set_culling_plane(float3 normal, float3 position) { this->plane = Eigen::Hyperplane<float, 3>(normal, position); }
         void set_culling_plane(float3 normal, float d) { this->plane = Eigen::Hyperplane<float, 3>(normal, d); }
@@ -29,6 +30,8 @@ namespace HexaLab {
             float3 pos = center + normal * (size * s - size / 2);
             set_culling_plane(normal, pos);
         }
+
+        Result import_mesh(std::string path);
 
         void update_vbuffer();
         void update_ibuffer();

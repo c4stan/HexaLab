@@ -8,30 +8,6 @@
 
 using namespace HexaLab;
 
-Mesh mesh;
-
-// split and export MeshData ?
-class Importer {
-public:
-	static Result import(std::string path, Visualizer& visualizer) {
-		HL_LOG("Loading %s...\n", path.c_str());
-		auto data = Loader::load(path);
-		if (!data.is_good()) {
-			return Result::Error;
-		}
-		
-		HL_LOG("Processing...\n");
-		Builder::build(mesh, data);
-
-		mesh.validate();
-
-		visualizer.set_mesh(mesh);
-
-		return Result::Success;
-	}
-};
-
-
 // Emscripten
 #include <emscripten.h>
 #include <emscripten/bind.h>
@@ -59,17 +35,10 @@ EMSCRIPTEN_BINDINGS(Plane) {
 	;
 }
 
-EMSCRIPTEN_BINDINGS(Importer) {
-	class_<Importer>("Importer")
-	.constructor<>()
-	.class_function("import", &Importer::import, allow_raw_pointers())
-	;
-}
-
 EMSCRIPTEN_BINDINGS(Visualizer) {
 	class_<HexaLab::Visualizer>("Visualizer")
     .constructor<>()
-	.function("set_mesh",	 		&HexaLab::Visualizer::set_mesh)
+	.function("import_mesh",	 	&HexaLab::Visualizer::import_mesh)
 	.function("update_vbuffer", 	&HexaLab::Visualizer::update_vbuffer)
 	.function("update_ibuffer", 	&HexaLab::Visualizer::update_ibuffer)
 	.function("set_culling_plane", 	select_overload<void(float, float, float, float)>(&HexaLab::Visualizer::set_culling_plane))

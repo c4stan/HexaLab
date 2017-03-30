@@ -3,11 +3,27 @@
 
 #include "common.h"
 #include "mesh.h"
-#include "loader.h"
+#include "mesh_data.h"
 #include <tuple>
+#include <unordered_map>
 
 namespace HexaLab {
     class Builder {
+
+/*
+    Expected hexa structure:
+
+     6------7
+    /|     /|
+   2------3 |
+   | |    | |
+   | 5----|-4
+   |/     |/
+   1------0 
+
+   TODO: to what extent does it actually matter ?
+*/
+
     public:   
         using IndexPair = std::tuple<Index, Index>;
         using IndexQuad = std::tuple<Index, Index, Index, Index>;
@@ -70,8 +86,8 @@ namespace HexaLab {
         static std::unordered_map<IndexPair, EdgeRef> edges_map;
         static std::unordered_map<IndexQuad, FaceRef> faces_map;
 
-        static Mesh* s_mesh;
-        static MeshData* s_data;
+        static Mesh* mesh;
+        static const MeshData* mesh_data;
 
         static EFace opposite(EFace face);
         static void add_edge(Index h, Index f, IndexPair indices);
@@ -79,7 +95,8 @@ namespace HexaLab {
         static void add_hexa(MeshData::Hexa hexa);
 
     public:
-        static void build(Mesh& mesh, MeshData& data);
+        static Mesh build(const MeshData& data);
+        static Result validate(Mesh& mesh);
     };
 }
 

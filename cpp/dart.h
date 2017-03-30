@@ -14,7 +14,7 @@ namespace HexaLab {
         Index edge = -1;
         Index vert = -1;
 
-        bool operator==(const Dart& other) {
+        bool operator==(const Dart& other) const {
             // Might limit the comparison to the hexa/face/edeg/vert fields
             return this->hexa_neighbor == other.hexa_neighbor
                 && this->face_neighbor == other.face_neighbor

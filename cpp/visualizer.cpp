@@ -1,15 +1,33 @@
 #include "visualizer.h"
 
-#include "mesh_navigator.h"
-
 namespace HexaLab {
+    Result Visualizer::import_mesh(std::string path) {
+        HL_LOG("Loading %s...\n", path.c_str());
+		auto data = Loader::load(path);
+		if (!data.is_good()) {
+			return Result::Error;
+		}
+		
+		HL_LOG("Processing...\n");
+		mesh = Builder::build(data);
+		
+		if (Builder::validate(mesh) != Result::Success) {
+            return Result::Error;
+        }
+
+        update_vbuffer();
+        update_ibuffer();
+
+		return Result::Success;
+    }
+
     void Visualizer::update_vbuffer() {
         //assert(this->mesh != nullptr);
 
         this->vbuffer.clear();
         this->mesh_aabb = AlignedBox3f();
         
-        auto& verts = this->mesh->get_verts();
+        auto& verts = this->mesh.get_verts();
         int k = verts.size();
         for (unsigned int i = 0; i < verts.size(); ++i) {
             this->vbuffer.push_back(verts[i].position);
@@ -20,119 +38,122 @@ namespace HexaLab {
     void Visualizer::update_ibuffer() {
         this->ibuffer.clear();
 
-        auto& hexas = this->mesh->get_hexas();
+        auto& hexas = this->mesh.get_hexas();
         for (unsigned int i = 0; i < hexas.size(); ++i) {
-            Hexa& hexa = mesh->get_hexa(i);
+            Hexa& hexa = mesh.get_hexa(i);
 
-            // Try to ignore the hexa if it's surrounded
+            // PROXIMITY CHECK
             bool surrounded = true;
+
             // TODO determine if it's surrounded
             surrounded = false;
+            
             if (surrounded) {
                 hexa.is_visible = false;
                 continue;
             }
 
-            // Try to cull the hexa with the plane
+            // PLANE CULL CHECK
             bool culled = 0;
-            auto nav = mesh->navigate(hexa);
+            MeshNavigator nav = mesh.navigate(hexa);
 
+            const Vert& v1 = nav.vert();
             do {
                 if (plane.signedDistance(nav.vert().position) < 0) {
                     culled = true;
                     break;
                 }
-                nav.flipV().flipE(); // next face vertex
-            } while(!nav.is_origin());
+                nav.flip_vert().flip_edge(); // next face vertex
+            } while(nav.vert() != v1);
+
             if (culled) {
                 hexa.is_visible = false;
                 continue;
             }
 
-            nav.flipE().flipF().flipE().flipV().flipE().flipF(); // front face -> back face
+            nav.flip_edge().flip_face().flip_edge().flip_vert().flip_edge().flip_face(); // front face -> back face
 
-            nav.set_origin();
+            const Vert& v2 = nav.vert();
             do {
                 if (plane.signedDistance(nav.vert().position) < 0) {
                     culled = true;
                     break;
                 }
-                nav.flipV().flipE(); // next face vertex
-            } while(!nav.is_origin());
+                nav.flip_vert().flip_edge(); // next face vertex
+            } while(nav.vert() != v2);
 
             if (culled) {
-                HL_LOG("CULL");
                 hexa.is_visible = false;
                 continue;
             }
 
-            // The hexa is visible. Add it to the ibuffer.
-            nav = mesh->navigate(hexa);
+            // DRAW
+            nav = mesh.navigate(hexa);
             for (int j = 0; j < 4; ++j) {
                 // store the index used as first for both this face's triangles
                 Index face_origin = nav.dart().vert;
                 // add the first triangle
                 ibuffer.push_back(face_origin);
                 
-                nav.flipV().flipE();
+                nav.flip_vert().flip_edge();
                 ibuffer.push_back(nav.dart().vert);
                 
-                nav.flipV();
+                nav.flip_vert();
                 ibuffer.push_back(nav.dart().vert);
                 
                 // add the second triangle
                 ibuffer.push_back(face_origin);
                 
-                nav.flipE();
+                nav.flip_edge();
                 ibuffer.push_back(nav.dart().vert);
                 
-                nav.flipV();
+                nav.flip_vert();
                 ibuffer.push_back(nav.dart().vert);
 
-                nav.flipE().flipV().flipF().flipE().flipV();
+                nav.flip_edge().flip_vert().flip_face().flip_edge().flip_vert();
             }
-            nav = mesh->navigate(hexa);
-            nav.flipF();
+            nav = mesh.navigate(hexa);
+            nav.flip_face();
             {
                 Index face_origin = nav.dart().vert;
                 // add the first triangle
                 ibuffer.push_back(face_origin);
                 
-                nav.flipV().flipE();
+                nav.flip_vert().flip_edge();
                 ibuffer.push_back(nav.dart().vert);
                 
-                nav.flipV();
+                nav.flip_vert();
                 ibuffer.push_back(nav.dart().vert);
                 
                 // add the second triangle
                 ibuffer.push_back(face_origin);
                 
-                nav.flipE();
+                nav.flip_edge();
                 ibuffer.push_back(nav.dart().vert);
                 
-                nav.flipV();
+                nav.flip_vert();
                 ibuffer.push_back(nav.dart().vert);
             }
-            nav = mesh->navigate(hexa);
-            nav.flipE().flipV().flipE().flipF();
+            nav = mesh.navigate(hexa);
+            nav.flip_edge().flip_vert().flip_edge().flip_face();
             {
                 Index face_origin = nav.dart().vert;
                 // add the first triangle
                 ibuffer.push_back(face_origin);
                 
-                nav.flipV().flipE();
+                nav.flip_vert().flip_edge();
                 ibuffer.push_back(nav.dart().vert);
                 
-                nav.flipV();
+                nav.flip_vert();
                 ibuffer.push_back(nav.dart().vert);
                 
                 // add the second triangle
                 ibuffer.push_back(face_origin);
                 
-                nav.flipE();
+                nav.flip_edge();
                 ibuffer.push_back(nav.dart().vert);
                 
-                nav.flipV();
+                nav.flip_vert();
                 ibuffer.push_back(nav.dart().vert);
             }     
         }

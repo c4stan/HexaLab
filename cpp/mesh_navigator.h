@@ -13,30 +13,23 @@ namespace HexaLab {
 
     class MeshNavigator {
     private:
-        Dart* _origin;
         Dart* _dart;
         Mesh* _mesh;
     public:
-        MeshNavigator(Dart* origin, Dart* dart, Mesh* mesh)
-            : _origin(origin)
-            , _dart(dart)
-            , _mesh(mesh) {}
+        MeshNavigator(Dart& dart, Mesh& mesh)
+            : _dart(&dart)
+            , _mesh(&mesh) {}
 
-        MeshNavigator& flipH();
-        MeshNavigator& flipF();
-        MeshNavigator& flipE();
-        MeshNavigator& flipV();
+        MeshNavigator& flip_hexa();
+        MeshNavigator& flip_face();
+        MeshNavigator& flip_edge();
+        MeshNavigator& flip_vert();
 
         Hexa& hexa();
         Face& face();
         Edge& edge();
         Vert& vert();
         Dart& dart() { return *_dart; }
-
-        // Is a shallow comparison correct ?
-        bool is_origin() { return _dart == _origin; }
-
-        void set_origin() { _origin = _dart; }
     };
 }
 
