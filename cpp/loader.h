@@ -2,15 +2,17 @@
 #define _HL_LOADER_H_
 
 #include "common.h"
-#include "mesh_data.h"
 #include <eigen/dense>
 #include <vector>
-#include <unordered_map>
 
-namespace HexaLab {
+namespace HexaLab { 
+    using namespace Eigen;
+    using namespace std;
+
     class Loader {
     public:
-        static MeshData load(const std::string& path);
+        // The two vectors will be cleared and then filled with loaded mesh data.
+        static bool load(const string& path, vector<Vector3f>& out_verts, vector<Index>& out_indices);
     };
 }
 

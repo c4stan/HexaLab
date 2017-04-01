@@ -3,7 +3,6 @@
 
 #include "common.h"
 #include "mesh.h"
-#include "mesh_data.h"
 #include <tuple>
 #include <unordered_map>
 
@@ -24,35 +23,44 @@ namespace HexaLab {
    TODO: to what extent does it actually matter ?
 */
 
-    public:   
-        using IndexPair = std::tuple<Index, Index>;
-        using IndexQuad = std::tuple<Index, Index, Index, Index>;
 
-    private:
-        struct EdgeRef {
-            Index idx;
+    public:
+        // Edges and faces are both temporarily stored into a table, 
+        // hashed by their vertices and mapped to their corresponding index in the mesh being built.
+        struct EdgeMapKey {
+            Index indices[2];
 
-            EdgeRef(Index idx) {
-                this->idx = idx;
+            EdgeMapKey(const Index* indices) { 
+                this->indices[0] = indices[0];
+                this->indices[1] = indices[1];
             }
+
+            bool operator==(const EdgeMapKey& other) const {
+                return this->indices[0] == other.indices[0]
+                    && this->indices[1] == other.indices[1];
+            }
+
         };
 
-        struct FaceRef {
-            Index idx;
-            Index hexas[2] = { -1, -1};
-            
+        struct FaceMapKey {
+            Index indices[4];
 
-            FaceRef(Index idx) {
-                this->idx = idx;
+            FaceMapKey(const Index* indices) {
+                this->indices[0] = indices[0];
+                this->indices[1] = indices[1];
+                this->indices[2] = indices[2];
+                this->indices[3] = indices[3];
+            }
+
+            bool operator==(const FaceMapKey& other) const {
+                return this->indices[0] == other.indices[0]
+                    && this->indices[1] == other.indices[1]
+                    && this->indices[2] == other.indices[2]
+                    && this->indices[3] == other.indices[3];
             }
         };
-
         
-        enum EHexa {
-            Front = 0,
-            Back,
-        };
-
+    private:
         enum EDart {
             BotRight = 0,
             BotLeft,
@@ -73,51 +81,46 @@ namespace HexaLab {
             Far,
         };
 
-        enum EVert {
-            NearBotRight = 0,
-            NearBotLeft,
-            NearTopLeft,
-            NearTopRight,
-            FarBotRight,
-            FarBotLeft,
-            FarTopLeft,
-            FarTopRight,
+        static constexpr Index hexa_face[6][4] = {
+            {1, 4, 5, 2},   // Left
+            {0, 1, 4, 5},   // Bottom
+            {0, 1, 2, 3},   // Front
+            {0, 4, 7, 3},   // Right
+            {7, 6, 2, 3},   // Top
+            {4, 5, 6, 7},   // Back
         };
 
-        static std::unordered_map<IndexPair, EdgeRef> edges_map;
-        static std::unordered_map<IndexQuad, FaceRef> faces_map;
+        static std::unordered_map<EdgeMapKey, Index> edges_map;
+        static std::unordered_map<FaceMapKey, Index> faces_map;
 
-        static Mesh* mesh;
-        static const MeshData* mesh_data;
-
-        static EFace opposite(EFace face);
-        static void add_edge(Index h, Index f, IndexPair indices);
-        static void add_face(Index h, EFace face_enum, IndexQuad indices, EHexa hexa_enum);
-        static void add_hexa(MeshData::Hexa hexa);
+        static void add_edge(Mesh& mesh, Index h, Index f, const Index* edge);
+        static void add_face(Mesh& mesh, Index h, const Index* face);
+        static void add_hexa(Mesh& mesh, const Index* hexa);
 
     public:
-        static Mesh build(const MeshData& data);
-        static Result validate(Mesh& mesh);
+        // indices should be a vector of size multiple of 8. each tuple of 8 consecutive indices represents an hexahedra.
+        static void build(Mesh& mesh, const vector<Vector3f>& verts, const vector<Index>& indices);
+        static bool validate(Mesh& mesh);
     };
 }
 
 namespace std {
-	template <> struct hash<HexaLab::Builder::IndexPair> {
-		size_t operator()(const HexaLab::Builder::IndexPair& e)const  {
-			return std::get<0>(e) + std::get<1>(e);
+	template <> struct hash<HexaLab::Builder::EdgeMapKey> {
+		size_t operator()(const HexaLab::Builder::EdgeMapKey& e)const  {
+			return e.indices[0] + e.indices[1];
 		}
 	};
 
-    inline bool operator==(const HexaLab::Builder::IndexPair& lhs, const HexaLab::Builder::IndexPair& rhs) {
-        return (std::get<0>(lhs) == std::get<0>(rhs) && std::get<1>(lhs) == std::get<1>(rhs))
-            || (std::get<0>(lhs) == std::get<1>(rhs) && std::get<1>(lhs) == std::get<0>(rhs));
-    }
+    // inline bool operator==(const HexaLab::Builder::EdgeMapKey& lhs, const HexaLab::Builder::EdgeMapKey& rhs) {
+    //     return (lhs.indices[0] == rhs.indices[0] && lhs.indices[1] == rhs.indices[1])
+    //         || (lhs.indices[0] == rhs.indices[1] && lhs.indices[1] == rhs.indices[0]);
+    // }
 }
 
 namespace std {
-	template <> struct hash<HexaLab::Builder::IndexQuad> {
-		size_t operator()(const HexaLab::Builder::IndexQuad& f)const  {
-			return std::get<0>(f) + std::get<1>(f) + std::get<2>(f) + std::get<3>(f);
+	template <> struct hash<HexaLab::Builder::FaceMapKey> {
+		size_t operator()(const HexaLab::Builder::FaceMapKey& f)const  {
+			return f.indices[0] + f.indices[1] + f.indices[2] + f.indices[3];
 		}
 	};
 }

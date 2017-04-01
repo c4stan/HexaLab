@@ -31,7 +31,7 @@ namespace HexaLab {
             set_culling_plane(normal, pos);
         }
 
-        Result import_mesh(std::string path);
+        bool import_mesh(std::string path);
 
         void update_vbuffer();
         void update_ibuffer();

@@ -6,15 +6,12 @@
 
 #define HL_LOG(...) printf(__VA_ARGS__)	
 
-#define HL_ASSERT(cond) if (!(cond)) { return HexaLab::Result::Error; }
+#define HL_ASSERT(cond) if (!(cond)) { return false; }
+
+#define HL_ASSERT_LOG(cond, ...) if (!(cond)) { printf(__VA_ARGS__); return false; }
 
 namespace HexaLab {
 	using js_ptr = uintptr_t;
 
 	using Index = int32_t;
-
-	enum class Result : uint8_t {
-		Success,
-		Error
-	};
 }

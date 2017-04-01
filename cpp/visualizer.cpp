@@ -1,25 +1,27 @@
 #include "visualizer.h"
 
 namespace HexaLab {
-    Result Visualizer::import_mesh(std::string path) {
+    bool Visualizer::import_mesh(std::string path) {
         
         HL_LOG("Loading %s...\n", path.c_str());
-		auto data = Loader::load(path);
-		if (!data.is_good()) {
-			return Result::Error;
+        vector<Vector3f> verts;
+        vector<Index> indices;
+		if (!Loader::load(path, verts, indices)) {
+			return false;
 		}
 		
 		HL_LOG("Processing...\n");
-		mesh = Builder::build(data);
+        Mesh mesh;
+		Builder::build(mesh, verts, indices);
 		
-		if (Builder::validate(mesh) != Result::Success) {
-            return Result::Error;
+		if (!Builder::validate(mesh)) {
+            return false;
         }
 
         update_vbuffer();
         update_ibuffer();
 
-		return Result::Success;
+		return true;
     }
 
     void Visualizer::update_vbuffer() {
@@ -46,7 +48,6 @@ namespace HexaLab {
             auto nav = mesh.navigate(hexa);
 
             const Vert& v0 = nav.vert();
-            //HL_LOG("hexa # %d\n", i);
             do {
                 if (nav.dart().hexa_neighbor == -1) {
                     surrounded = false;
@@ -63,6 +64,7 @@ namespace HexaLab {
 
             // PLANE CULL CHECK
             bool culled = 0;
+            nav = mesh.navigate(hexa);
             const Vert& v1 = nav.vert();
             do {
                 if (plane.signedDistance(nav.vert().position) < 0) {

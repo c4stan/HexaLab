@@ -4,172 +4,95 @@
 
 namespace HexaLab {
 
-    std::unordered_map<Builder::IndexPair, Builder::EdgeRef> Builder::edges_map;
-    std::unordered_map<Builder::IndexQuad, Builder::FaceRef> Builder::faces_map;
+    std::unordered_map<Builder::EdgeMapKey, Index> Builder::edges_map;
+    std::unordered_map<Builder::FaceMapKey, Index> Builder::faces_map;
 
-    Mesh*           Builder::mesh;
-    const MeshData* Builder::mesh_data;
+    constexpr Index Builder::hexa_face[6][4];
 
-    void Builder::add_edge(Index h, Index f, IndexPair indices) {
-        Index e = -1;
-        auto search_result = edges_map.find(indices);
+    void Builder::add_edge(Mesh& mesh, Index h, Index f, const Index* edge) {
+        // Lookup/add the edge
+        Index e;
+        auto search_result = edges_map.find(EdgeMapKey(edge));
         if (search_result != edges_map.end()) {
-            e = search_result->second.idx;
+            e = search_result->second;
         } else {
-            e = mesh->edges.size();
-            Edge edge;
-            edge.dart = mesh->darts.size();
-            mesh->edges.push_back(edge);
-            edges_map.insert(std::make_pair(indices, e));
+            e = mesh.edges.size();
+            mesh.edges.emplace_back(mesh.darts.size());
+            edges_map.insert(std::make_pair(EdgeMapKey(edge), e));
         }
 
-        // Vertex A
-        Index i1 = std::get<0>(indices);
-        assert(mesh->verts.size() > i1);
-        Vert& a = mesh->verts[i1];
-        if (a.dart == -1) {   // Store the first dart on the vertex in the vertex
-            a.dart = mesh->darts.size();
-            a.position = mesh_data->get_vert(i1);
-        }
-        Dart d1;
-        d1.hexa = h;
-        d1.face = f;
-        d1.edge = e;
-        d1.vert = i1;
-        mesh->darts.push_back(d1);
+        // Add a dart to each vertex
+        assert(mesh.verts.size() > edge[0]);
+        if (mesh.verts[edge[0]].dart == -1) mesh.verts[edge[0]].dart = mesh.darts.size();
+        mesh.darts.emplace_back(h, f, e, edge[0]);
 
-        // Vertex B
-        Index i2 = std::get<1>(indices);
-        assert(mesh->verts.size() > i2);
-        Vert& b = mesh->verts[i2];
-        if (b.dart == -1) {  // Store the first dart on the vertex in the vertex
-            b.dart = mesh->darts.size();
-            b.position = mesh_data->get_vert(i2);
-        }
-        Dart d2;
-        d2.hexa = h;
-        d2.face = f;
-        d2.edge = e;
-        d2.vert = i2;
-        mesh->darts.push_back(d2);
+        assert(mesh.verts.size() > edge[1]);
+        if(mesh.verts[edge[1]].dart == -1) mesh.verts[edge[1]].dart = mesh.darts.size();
+        mesh.darts.emplace_back(h, f, e, edge[1]);
 
         // Link darts along the edge
-        mesh->darts[mesh->darts.size() - 1].vert_neighbor = mesh->darts.size() - 2;
-        mesh->darts[mesh->darts.size() - 2].vert_neighbor = mesh->darts.size() - 1;
+        mesh.darts[mesh.darts.size() - 1].vert_neighbor = mesh.darts.size() - 2;
+        mesh.darts[mesh.darts.size() - 2].vert_neighbor = mesh.darts.size() - 1;
     }
 
-    Builder::EFace Builder::opposite(EFace face) {
-        return (EFace)((face + 3) % 6);
-    }
-
-    void Builder::add_face(Index h, EFace face_enum, IndexQuad indices, EHexa hexa_enum) {
-        Index f = -1;
-        auto search_result = faces_map.find(indices);
+    // h: index of the hexa to whom the face is path of.
+    // face: array of 4 indices representing the face.
+    void Builder::add_face(Mesh& mesh, Index h, const Index* face) {
+        // Lookup/add the face
+        Index f;
+        auto search_result = faces_map.find(FaceMapKey(face));
         if (search_result != faces_map.end()) {
-            f = search_result->second.idx;
-            Index* hexas = search_result->second.hexas;
-
-            Index h2 = hexas[!hexa_enum];
-            EFace h2_face = opposite(face_enum);
-
-            hexas[hexa_enum] = h;            
-
-            Index base_idx = h2 * 48;
-            Dart* base = mesh->darts.data() + base_idx;
-            base[8 * h2_face + EDart::TopRight].hexa_neighbor = base_idx + 8 * face_enum + EDart::TopRight;
-            base[8 * h2_face + EDart::TopLeft].hexa_neighbor = base_idx + 8 * face_enum + EDart::TopLeft;
-            base[8 * h2_face + EDart::LeftTop].hexa_neighbor = base_idx + 8 * face_enum + EDart::LeftTop;
-            base[8 * h2_face + EDart::LeftBot].hexa_neighbor = base_idx + 8 * face_enum + EDart::LeftBot;
-            base[8 * h2_face + EDart::BotLeft].hexa_neighbor = base_idx + 8 * face_enum + EDart::BotLeft;
-            base[8 * h2_face + EDart::BotRight].hexa_neighbor = base_idx + 8 * face_enum + EDart::BotRight;
-            base[8 * h2_face + EDart::RightBot].hexa_neighbor = base_idx + 8 * face_enum + EDart::RightBot;
-            base[8 * h2_face + EDart::RightTop].hexa_neighbor = base_idx + 8 * face_enum + EDart::RightTop;
-
-            base[8 * face_enum + EDart::TopRight].hexa_neighbor = base_idx + 8 * h2_face + EDart::TopRight;
-            base[8 * face_enum + EDart::TopLeft].hexa_neighbor = base_idx + 8 * h2_face + EDart::TopLeft;
-            base[8 * face_enum + EDart::LeftTop].hexa_neighbor = base_idx + 8 * h2_face + EDart::LeftTop;
-            base[8 * face_enum + EDart::LeftBot].hexa_neighbor = base_idx + 8 * h2_face + EDart::LeftBot;
-            base[8 * face_enum + EDart::BotLeft].hexa_neighbor = base_idx + 8 * h2_face + EDart::BotLeft;
-            base[8 * face_enum + EDart::BotRight].hexa_neighbor = base_idx + 8 * h2_face + EDart::BotRight;
-            base[8 * face_enum + EDart::RightBot].hexa_neighbor = base_idx + 8 * h2_face + EDart::RightBot;
-            base[8 * face_enum + EDart::RightTop].hexa_neighbor = base_idx + 8 * h2_face + EDart::RightTop;
+            f = search_result->second;
         } else {
-            // face not found, insert
-            f = mesh->faces.size();
-            FaceRef f_ref(f);
-            f_ref.hexas[hexa_enum] = h;
-            faces_map.insert(std::make_pair(indices, f_ref));
-            Face face;
-            face.dart = mesh->darts.size();
-            mesh->faces.push_back(face);
+            f = mesh.faces.size();
+            faces_map.insert(std::make_pair(FaceMapKey(face), f));
+            mesh.faces.emplace_back(mesh.darts.size());
         }
 
-        // Order matters here !
-        add_edge(h, f, std::make_tuple(std::get<0>(indices), std::get<1>(indices)));
-        add_edge(h, f, std::make_tuple(std::get<1>(indices), std::get<2>(indices)));
-        add_edge(h, f, std::make_tuple(std::get<2>(indices), std::get<3>(indices)));
-        add_edge(h, f, std::make_tuple(std::get<3>(indices), std::get<0>(indices)));
+        Index f0_base = mesh.darts.size();
 
-        assert(mesh->darts.size() >= 8);
-        Index base_idx = mesh->darts.size() - 8;
-        Dart* base = mesh->darts.data() + base_idx;
-        base[EDart::RightTop].edge_neighbor = base_idx + EDart::TopRight;
-        base[EDart::TopRight].edge_neighbor = base_idx + EDart::RightTop;
-        base[EDart::TopLeft].edge_neighbor = base_idx + EDart::LeftTop;
-        base[EDart::LeftTop].edge_neighbor = base_idx + EDart::TopLeft;
-        base[EDart::LeftBot].edge_neighbor = base_idx + EDart::BotLeft;
-        base[EDart::BotLeft].edge_neighbor = base_idx + EDart::LeftBot;
-        base[EDart::BotRight].edge_neighbor = base_idx + EDart::RightBot;
-        base[EDart::RightBot].edge_neighbor = base_idx + EDart::BotRight;
+        // add face edges
+        for (int i = 0; i < 4; ++i) {
+            Index edge_indices[2] = {face[i], face[(i + 1) % 4]};
+            add_edge(mesh, h, f, edge_indices);
+        }
+
+        // Link faces with the adjacent hexa, if there's one
+        if (search_result != faces_map.end()) {
+            Index f1_base = mesh.faces[f].dart;
+
+            for (int i = 0; i < 8; ++i) {
+                mesh.darts[f1_base + i].hexa_neighbor = f0_base + i;
+                mesh.darts[f0_base + i].hexa_neighbor = f1_base + i;
+            }
+        }
+
+        // link edges along the face
+        for (int i = 0; i < 8; i += 2) {
+            mesh.darts[f0_base + i].edge_neighbor = f0_base + (i + 1) % 8;
+            mesh.darts[f0_base + (i + 1) % 8].edge_neighbor = f0_base + i;
+        }
     }
 
-    void Builder::add_hexa(MeshData::Hexa hexa) {
-        Index h = mesh->hexas.size();
-        mesh->hexas.emplace_back();
-        Hexa& mesh_hexa = mesh->hexas.back();
-        mesh_hexa.dart = mesh->darts.size();
+    // hexa: array of 8 indices representing the hexa.
+    void Builder::add_hexa(Mesh& mesh, const Index* hexa) {
+        const Index h = mesh.hexas.size();
+        mesh.hexas.emplace_back(mesh.darts.size());
 
-        // Order matters here ! sort it EFace - wise.
-        IndexQuad face;
-        face = std::make_tuple(hexa.verts[EVert::NearBotLeft],
-                               hexa.verts[EVert::FarBotLeft],
-                               hexa.verts[EVert::FarTopLeft],
-                               hexa.verts[EVert::NearTopLeft]);
-        add_face(h, EFace::Left, face, EHexa::Back);
+        for (int i = 0; i < 6; ++i) {
+            Index face_indices[4];
+            for (int j = 0; j < 4; ++j) {
+                face_indices[j] = hexa[Builder::hexa_face[i][j]];
+            }
+            add_face(mesh, h, face_indices);
 
-        face = std::make_tuple(hexa.verts[EVert::FarBotRight],
-                               hexa.verts[EVert::FarBotLeft],
-                               hexa.verts[EVert::NearBotLeft],
-                               hexa.verts[EVert::NearBotRight]);
-        add_face(h, EFace::Bottom, face, EHexa::Back);
+            // TODO link face darts along the hexa ...
 
-        face = std::make_tuple(hexa.verts[EVert::NearBotRight],
-                               hexa.verts[EVert::NearBotLeft],
-                               hexa.verts[EVert::NearTopLeft],
-                               hexa.verts[EVert::NearTopRight]);
-        add_face(h, EFace::Near, face, EHexa::Back);
-
-        face = std::make_tuple(hexa.verts[EVert::NearBotRight],
-                               hexa.verts[EVert::FarBotRight],
-                               hexa.verts[EVert::FarTopRight],
-                               hexa.verts[EVert::NearTopRight]);
-        add_face(h, EFace::Right, face, EHexa::Front);
-
-        face = std::make_tuple(hexa.verts[EVert::FarTopRight],
-                               hexa.verts[EVert::FarTopLeft],
-                               hexa.verts[EVert::NearTopLeft],
-                               hexa.verts[EVert::NearTopRight]);
-        add_face(h, EFace::Top, face, EHexa::Front);
-
-        face = std::make_tuple(hexa.verts[EVert::FarBotRight],
-                               hexa.verts[EVert::FarBotLeft],
-                               hexa.verts[EVert::FarTopLeft],
-                               hexa.verts[EVert::FarTopRight]);
-        add_face(h, EFace::Far, face, EHexa::Front);
-
-        assert(mesh->darts.size() >= 48);
-        Index base_idx = mesh->darts.size() - 48;
-        Dart* base = mesh->darts.data() + base_idx;
+        }
+        
+        assert(mesh.darts.size() >= 48);
+        Index base_idx = mesh.darts.size() - 48;
+        Dart* base = mesh.darts.data() + base_idx;
         base[8 * EFace::Left + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Near + EDart::LeftBot;
         base[8 * EFace::Left + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::LeftTop;
         base[8 * EFace::Left + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::LeftBot;
@@ -225,28 +148,28 @@ namespace HexaLab {
         base[8 * EFace::Far + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Right + EDart::LeftTop;
     }
 
-    Mesh Builder::build(const MeshData& data) {
-        Mesh mesh;
-
-        Builder::mesh      = &mesh;
-        Builder::mesh_data = &data;
+    void Builder::build(Mesh& mesh, const vector<Vector3f>& vertices, const vector<Index>& indices) {
+        assert(indices.size() % 8 == 0);
 
         edges_map.clear();
         faces_map.clear();
 
-        mesh.verts.resize(data.get_verts().size());
-
-        for (unsigned int h = 0; h < data.get_hexas().size(); ++h) {
-            add_hexa(data.get_hexa(h));
+        for (size_t v = 0; v < vertices.size(); ++v) {
+            mesh.verts.emplace_back(vertices[v]);
         }
 
-        return mesh;
+        size_t hexa_count = indices.size() / 8;
+        for (size_t h = 0; h < hexa_count; ++h) {
+            add_hexa(mesh, &indices[h * 8]);
+        }
     }
 
-    Result Builder::validate(Mesh& mesh) {
+    bool Builder::validate(Mesh& mesh) {
         int surface_darts = 0;
         for (size_t i = 0; i < mesh.get_darts().size(); ++i) {
             Dart& dart = mesh.get_dart(i);
+
+            auto nav = mesh.navigate(dart);
 
             HL_ASSERT(dart.hexa != -1);
             HL_ASSERT(dart.face != -1);
@@ -259,8 +182,8 @@ namespace HexaLab {
             if (dart.hexa_neighbor == -1) {
                 ++surface_darts;
             } else {
-                //nav.flip_hexa().flip_hexa();
-                //HL_ASSERT(dart == nav.dart());
+                nav.flip_hexa().flip_hexa();
+                HL_ASSERT(dart == nav.dart());
             }
             
 
@@ -297,6 +220,6 @@ namespace HexaLab {
 
         HL_LOG("[Mesh validator] Surface darts: %d/%d\n", surface_darts, mesh.get_darts().size());
 
-        return Result::Success;
+        return true;
     }
 }
