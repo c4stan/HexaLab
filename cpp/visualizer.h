@@ -37,9 +37,9 @@ namespace HexaLab {
         void update_ibuffer();
     
         js_ptr get_vbuffer() { return (js_ptr)this->vbuffer.data(); }
-        int get_vbuffer_size() { return this->vbuffer.size(); }
+        size_t get_vbuffer_size() { return this->vbuffer.size(); }
         js_ptr get_ibuffer() { return (js_ptr)this->ibuffer.data(); }
-        int get_ibuffer_size() { return this->ibuffer.size(); }
+        size_t get_ibuffer_size() { return this->ibuffer.size(); }
     };
 }
 

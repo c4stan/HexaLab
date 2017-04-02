@@ -8,32 +8,10 @@
 
 using namespace HexaLab;
 
-// Emscripten
 #include <emscripten.h>
 #include <emscripten/bind.h>
 
 using namespace emscripten;
-
-
-EMSCRIPTEN_BINDINGS(Result) {
-    enum_<HexaLab::Result>("Result")
-	.value("Success", 	HexaLab::Result::Success)
-	.value("Error", 	HexaLab::Result::Error)
-	;
-}
-
-EMSCRIPTEN_BINDINGS(vec3) {
-	class_<Eigen::Vector3f>("vec3")
-	.constructor<float, float, float>()
-	;
-}
-
-EMSCRIPTEN_BINDINGS(Plane) {
-	class_<Eigen::Hyperplane<float, 3>>("Plane")
-	.constructor<>()
-	.constructor<Eigen::Vector3f&, Eigen::Vector3f&>()
-	;
-}
 
 EMSCRIPTEN_BINDINGS(Visualizer) {
 	class_<HexaLab::Visualizer>("Visualizer")

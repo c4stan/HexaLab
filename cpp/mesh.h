@@ -21,7 +21,7 @@ namespace HexaLab {
 
         Hexa(const Hexa& other) = delete;
         Hexa(const Hexa&& other) {
-            this->dart = dart;
+            this->dart = other.dart;
             this->is_visible = other.is_visible;
         }
 

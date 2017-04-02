@@ -68,7 +68,7 @@ namespace HexaLab {
         }
 
         // link edges along the face
-        for (int i = 0; i < 8; i += 2) {
+        for (int i = 1; i < 8; i += 2) {
             mesh.darts[f0_base + i].edge_neighbor = f0_base + (i + 1) % 8;
             mesh.darts[f0_base + (i + 1) % 8].edge_neighbor = f0_base + i;
         }
@@ -192,30 +192,42 @@ namespace HexaLab {
 
         for (size_t i = 0; i < mesh.get_verts().size(); ++i) {
             Vert& v = mesh.get_vert(i);
-            assert(v.dart != -1);
+            HL_ASSERT(v.dart != -1);
             auto nav = mesh.navigate(v);
-            assert(nav.vert() == v);
+            HL_ASSERT(nav.vert() == v);
             nav.flip_vert().flip_vert();
-            assert(nav.vert() == v);
+            HL_ASSERT(nav.vert() == v);
         }
 
         for (size_t i = 0; i < mesh.get_edges().size(); ++i) {
             Edge& e = mesh.get_edge(i);
-            assert(e.dart != -1);
+            HL_ASSERT(e.dart != -1);
             auto nav = mesh.navigate(e);
-            assert(nav.edge() == e);
+            HL_ASSERT(nav.edge() == e);
             nav.flip_edge().flip_edge();
-            assert(nav.edge() == e);
+            HL_ASSERT(nav.edge() == e);
         }
 
         for (size_t i = 0; i < mesh.get_faces().size(); ++i) {
             Face& f = mesh.get_face(i);
-            assert(f.dart != -1);
+            HL_ASSERT(f.dart != -1);
             auto nav = mesh.navigate(f);
-            assert(nav.face() == f);
+            HL_ASSERT(nav.face() == f);
             nav.flip_face();
             nav.flip_face();
-            assert(nav.face() == f);
+            HL_ASSERT(nav.face() == f);
+        }
+
+        for (size_t i = 0; i < mesh.get_hexas().size(); ++i) {
+            Hexa& h = mesh.get_hexa(i);
+            HL_ASSERT(h.dart != -1);
+            auto nav = mesh.navigate(h);
+            HL_ASSERT(nav.hexa() == h);
+            if (nav.dart().hexa_neighbor != -1) {
+                nav.flip_hexa();
+                nav.flip_hexa();
+                HL_ASSERT(nav.hexa() == h);
+            }
         }
 
         HL_LOG("[Mesh validator] Surface darts: %d/%d\n", surface_darts, mesh.get_darts().size());

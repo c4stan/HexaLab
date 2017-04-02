@@ -82,8 +82,8 @@ namespace HexaLab {
         };
 
         static constexpr Index hexa_face[6][4] = {
-            {1, 4, 5, 2},   // Left
-            {0, 1, 4, 5},   // Bottom
+            {1, 5, 6, 2},   // Left
+            {4, 5, 1, 0},   // Bottom
             {0, 1, 2, 3},   // Front
             {0, 4, 7, 3},   // Right
             {7, 6, 2, 3},   // Top

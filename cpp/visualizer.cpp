@@ -11,13 +11,12 @@ namespace HexaLab {
 		}
 		
 		HL_LOG("Processing...\n");
-        Mesh mesh;
 		Builder::build(mesh, verts, indices);
 		
 		if (!Builder::validate(mesh)) {
             return false;
         }
-
+        
         update_vbuffer();
         update_ibuffer();
 
@@ -29,7 +28,7 @@ namespace HexaLab {
         this->mesh_aabb = AlignedBox3f();
         
         auto& verts = this->mesh.get_verts();
-        int k = verts.size();
+        size_t k = verts.size();
         for (unsigned int i = 0; i < verts.size(); ++i) {
             this->vbuffer.push_back(verts[i].position);
             this->mesh_aabb.extend(verts[i].position);
