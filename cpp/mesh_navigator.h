@@ -16,6 +16,7 @@ namespace HexaLab {
         Dart* _dart;
         Mesh* _mesh;
     public:
+        MeshNavigator() { _dart = nullptr; _mesh = nullptr; };
         MeshNavigator(Dart& dart, Mesh& mesh)
             : _dart(&dart)
             , _mesh(&mesh) {}
@@ -24,6 +25,11 @@ namespace HexaLab {
         MeshNavigator& flip_face();
         MeshNavigator& flip_edge();
         MeshNavigator& flip_vert();
+
+        MeshNavigator& rotate_on_edge();
+        MeshNavigator& rotate_on_face();
+        MeshNavigator& rotate_on_hexa();
+        MeshNavigator& next_hexa_face();
 
         Hexa& hexa();
         Face& face();

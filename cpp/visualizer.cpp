@@ -13,12 +13,12 @@ namespace HexaLab {
 		HL_LOG("Processing...\n");
 		Builder::build(mesh, verts, indices);
 		
-		if (!Builder::validate(mesh)) {
+		/*if (!Builder::validate(mesh)) {
             return false;
-        }
+        }*/
         
         update_vbuffer();
-        update_ibuffer();
+        update_view();
 
 		return true;
     }
@@ -35,134 +35,73 @@ namespace HexaLab {
         }
     }
 
-    void Visualizer::update_ibuffer() {
+    void Visualizer::update_view() {
         this->ibuffer.clear();
+        this->normals.clear();
+
+        vector<Index> visible_faces;
 
         auto& hexas = this->mesh.get_hexas();
         for (unsigned int i = 0; i < hexas.size(); ++i) {
             Hexa& hexa = mesh.get_hexa(i);
-
-            // PROXIMITY CHECK
-            bool surrounded = true;
-            auto nav = mesh.navigate(hexa);
-
-            const Vert& v0 = nav.vert();
-            do {
-                if (nav.dart().hexa_neighbor == -1) {
-                    surrounded = false;
-                    break;
-                }
-                nav.flip_vert();
-                nav.flip_edge();
-                nav.flip_face();
-            } while (nav.vert() != v0);
-            if (surrounded) {
-                hexa.is_visible = false;
-                continue;
-            }
-
+            
             // PLANE CULL CHECK
             bool culled = 0;
+            MeshNavigator nav; 
+            const Vert* begin;
+            
+            // front face
             nav = mesh.navigate(hexa);
-            const Vert& v1 = nav.vert();
+            begin = &nav.vert();
             do {
                 if (plane.signedDistance(nav.vert().position) < 0) {
                     culled = true;
                     break;
                 }
-                nav.flip_vert().flip_edge(); // next face vertex
-            } while(nav.vert() != v1);
-
+                nav.rotate_on_face();
+            } while (nav.vert() != *begin);
             if (culled) {
                 hexa.is_visible = false;
                 continue;
             }
-
-            nav.flip_edge().flip_face().flip_edge().flip_vert().flip_edge().flip_face(); // front face -> back face
-
-            const Vert& v2 = nav.vert();
+            
+            // back face
+            nav.rotate_on_hexa().rotate_on_hexa();
+            begin = &nav.vert();
             do {
                 if (plane.signedDistance(nav.vert().position) < 0) {
                     culled = true;
                     break;
                 }
-                nav.flip_vert().flip_edge(); // next face vertex
-            } while(nav.vert() != v2);
-
+                nav.rotate_on_face(); // next face vertex
+            } while (nav.vert() != *begin);
             if (culled) {
                 hexa.is_visible = false;
                 continue;
             }
 
-             // DRAW
+            // PROXIMITY CHECK
             nav = mesh.navigate(hexa);
-            for (int j = 0; j < 4; ++j) {
-                // store the index used as first for both this face's triangles
-                Index face_origin = nav.dart().vert;
-                // add the first triangle
-                ibuffer.push_back(face_origin);
-                
-                nav.flip_vert().flip_edge();
-                ibuffer.push_back(nav.dart().vert);
-                
-                nav.flip_vert();
-                ibuffer.push_back(nav.dart().vert);
-                
-                // add the second triangle
-                ibuffer.push_back(face_origin);
-                
-                nav.flip_edge();
-                ibuffer.push_back(nav.dart().vert);
-                
-                nav.flip_vert();
-                ibuffer.push_back(nav.dart().vert);
-
-                nav.flip_edge().flip_vert().flip_face().flip_edge().flip_vert();
-            }
-            nav = mesh.navigate(hexa);
-            nav.flip_face();
-            {
-                Index face_origin = nav.dart().vert;
-                // add the first triangle
-                ibuffer.push_back(face_origin);
-                
-                nav.flip_vert().flip_edge();
-                ibuffer.push_back(nav.dart().vert);
-                
-                nav.flip_vert();
-                ibuffer.push_back(nav.dart().vert);
-                
-                // add the second triangle
-                ibuffer.push_back(face_origin);
-                
-                nav.flip_edge();
-                ibuffer.push_back(nav.dart().vert);
-                
-                nav.flip_vert();
-                ibuffer.push_back(nav.dart().vert);
-            }
-            nav = mesh.navigate(hexa);
-            nav.flip_edge().flip_vert().flip_edge().flip_face();
-            {
-                Index face_origin = nav.dart().vert;
-                // add the first triangle
-                ibuffer.push_back(face_origin);
-                
-                nav.flip_vert().flip_edge();
-                ibuffer.push_back(nav.dart().vert);
-                
-                nav.flip_vert();
-                ibuffer.push_back(nav.dart().vert);
-                
-                // add the second triangle
-                ibuffer.push_back(face_origin);
-                
-                nav.flip_edge();
-                ibuffer.push_back(nav.dart().vert);
-                
-                nav.flip_vert();
-                ibuffer.push_back(nav.dart().vert);
-            }     
+            begin = &nav.vert();
+            do {
+                if (nav.dart().hexa_neighbor == -1) {
+                    // DRAW
+                    // split the face in 2 triangles and add their indices to the ibuffer
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    // normal
+                    nav.hexa() == hexa ? normals.push_back(nav.face().normal) : normals.push_back(nav.face().normal * -1);
+                }
+                nav.next_hexa_face();
+            } while (nav.vert() != *begin);     
         }
     }
 }

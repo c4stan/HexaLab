@@ -51,10 +51,29 @@ namespace HexaLab {
 
         Index f0_base = mesh.darts.size();
 
-        // add face edges
+        // Add face edges
         for (int i = 0; i < 4; ++i) {
             Index edge_indices[2] = {face[i], face[(i + 1) % 4]};
             add_edge(mesh, h, f, edge_indices);
+        }
+
+        // Compute face normal, if its the first
+        if (search_result == faces_map.end()) {
+            Vector3f normal(0, 0, 0);
+            Vector3f a = mesh.verts[face[3]].position - mesh.verts[face[0]].position;
+            Vector3f b = mesh.verts[face[1]].position - mesh.verts[face[0]].position;
+            normal += a.cross(b);
+            a = mesh.verts[face[0]].position - mesh.verts[face[1]].position;
+            b = mesh.verts[face[2]].position - mesh.verts[face[1]].position;
+            normal += a.cross(b);
+            a = mesh.verts[face[1]].position - mesh.verts[face[2]].position;
+            b = mesh.verts[face[3]].position - mesh.verts[face[2]].position;
+            normal += a.cross(b);
+            a = mesh.verts[face[2]].position - mesh.verts[face[3]].position;
+            b = mesh.verts[face[0]].position - mesh.verts[face[3]].position;
+            normal += a.cross(b);
+            (normal /= 4).normalize();
+            mesh.faces.back().normal = normal;
         }
 
         // Link faces with the adjacent hexa, if there's one
@@ -67,7 +86,7 @@ namespace HexaLab {
             }
         }
 
-        // link edges along the face
+        // Link edges along the face
         for (int i = 1; i < 8; i += 2) {
             mesh.darts[f0_base + i].edge_neighbor = f0_base + (i + 1) % 8;
             mesh.darts[f0_base + (i + 1) % 8].edge_neighbor = f0_base + i;
@@ -85,11 +104,10 @@ namespace HexaLab {
                 face_indices[j] = hexa[Builder::hexa_face[i][j]];
             }
             add_face(mesh, h, face_indices);
-
-            // TODO link face darts along the hexa ...
-
         }
-        
+
+        // TODO link faces along the hexa ...
+
         assert(mesh.darts.size() >= 48);
         Index base_idx = mesh.darts.size() - 48;
         Dart* base = mesh.darts.data() + base_idx;

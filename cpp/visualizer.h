@@ -10,10 +10,23 @@
 
 namespace HexaLab {
     class Visualizer {
+    public:
+        class js_vec3 : public Eigen::Vector3f {
+        public:
+            js_vec3() : Eigen::Vector3f() {};
+            js_vec3(const Eigen::Vector3f& v) : Eigen::Vector3f(v) {};
+            js_vec3(const Eigen::Vector3f&& v) : Eigen::Vector3f(v) {};
+            float get_x() { return *(float*)this; }
+            float get_y() { return *((float*)this + 1); }
+            float get_z() { return *((float*)this + 2); }
+        };
+
+    private:
         using float3 = Eigen::Vector3f;
 
         std::vector<float3> vbuffer;
         std::vector<Index> ibuffer;
+        std::vector<float3> normals;
         Eigen::Hyperplane<float, 3> plane;
         Mesh mesh;
 		AlignedBox3f mesh_aabb;
@@ -34,12 +47,15 @@ namespace HexaLab {
         bool import_mesh(std::string path);
 
         void update_vbuffer();
-        void update_ibuffer();
+        void update_view();
+
+        js_vec3 get_center() { return js_vec3(mesh_aabb.center()); }
     
         js_ptr get_vbuffer() { return (js_ptr)this->vbuffer.data(); }
         size_t get_vbuffer_size() { return this->vbuffer.size(); }
         js_ptr get_ibuffer() { return (js_ptr)this->ibuffer.data(); }
         size_t get_ibuffer_size() { return this->ibuffer.size(); }
+        js_ptr get_normals() { return (js_ptr)this->normals.data(); }
     };
 }
 

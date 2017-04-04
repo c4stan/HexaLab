@@ -5,6 +5,7 @@
 #include "mesh.h"
 #include <tuple>
 #include <unordered_map>
+#include <algorithm>
 
 namespace HexaLab {
     class Builder {
@@ -50,6 +51,7 @@ namespace HexaLab {
                 this->indices[1] = indices[1];
                 this->indices[2] = indices[2];
                 this->indices[3] = indices[3];
+                std::sort(std::begin(this->indices), std::end(this->indices));
             }
 
             bool operator==(const FaceMapKey& other) const {
@@ -110,11 +112,6 @@ namespace std {
 			return e.indices[0] + e.indices[1];
 		}
 	};
-
-    // inline bool operator==(const HexaLab::Builder::EdgeMapKey& lhs, const HexaLab::Builder::EdgeMapKey& rhs) {
-    //     return (lhs.indices[0] == rhs.indices[0] && lhs.indices[1] == rhs.indices[1])
-    //         || (lhs.indices[0] == rhs.indices[1] && lhs.indices[1] == rhs.indices[0]);
-    // }
 }
 
 namespace std {

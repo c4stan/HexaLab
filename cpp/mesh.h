@@ -19,12 +19,6 @@ namespace HexaLab {
         Hexa(){}
         Hexa(Index dart) { this->dart = dart; }
 
-        Hexa(const Hexa& other) = delete;
-        Hexa(const Hexa&& other) {
-            this->dart = other.dart;
-            this->is_visible = other.is_visible;
-        }
-
         bool operator==(const Hexa& other) const {
             return this->dart == other.dart;
         }
@@ -33,14 +27,12 @@ namespace HexaLab {
 
     struct Face {
         Index dart = -1;
+        Vector3f normal;
 
         Face(){}
         Face(Index dart) { this->dart = dart; }
-
-        Face(const Face& other) = delete;
-        Face(const Face&& other) {
-            this->dart = other.dart;    
-        }
+        Face(Index dart, const Vector3f& norm) { this->dart = dart; this->normal = norm; }
+        Face(Index dart, const Vector3f&& norm) { this->dart = dart; this->normal = norm; }
 
         bool operator==(const Face& other) const {
             return this->dart == other.dart;
@@ -53,11 +45,6 @@ namespace HexaLab {
 
         Edge(){}
         Edge(Index dart) { this->dart = dart; }
-
-        Edge(const Edge& other) = delete;
-        Edge(const Edge&& other) {
-            this->dart = other.dart;
-        }
 
         bool operator==(const Edge& other) const {
             return this->dart == other.dart;
@@ -76,12 +63,6 @@ namespace HexaLab {
         Vert(Vector3f position, Index dart) {
             this->position = position;
             this->dart = dart;
-        }
-
-        Vert(const Vert& other) = delete;
-        Vert(const Vert&& other) {
-            this->dart = other.dart;
-            this->position = other.position;
         }
 
         bool operator==(const Vert& other) const {
