@@ -30,12 +30,12 @@ namespace HexaLab {
         if(mesh.verts[edge[1]].dart == -1) mesh.verts[edge[1]].dart = mesh.darts.size();
         mesh.darts.emplace_back(h, f, e, edge[1]);
 
-        // Link darts along the edge
+        // Link vertices along the edge
         mesh.darts[mesh.darts.size() - 1].vert_neighbor = mesh.darts.size() - 2;
         mesh.darts[mesh.darts.size() - 2].vert_neighbor = mesh.darts.size() - 1;
     }
 
-    // h: index of the hexa to whom the face is path of.
+    // h: index of the hexa to whom the face is part of.
     // face: array of 4 indices representing the face.
     void Builder::add_face(Mesh& mesh, Index h, const Index* face) {
         // Lookup/add the face
@@ -57,7 +57,7 @@ namespace HexaLab {
             add_edge(mesh, h, f, edge_indices);
         }
 
-        // Compute face normal, if its the first
+        // Compute face normal, if its the first match
         if (search_result == faces_map.end()) {
             Vector3f normal(0, 0, 0);
             Vector3f a, b;

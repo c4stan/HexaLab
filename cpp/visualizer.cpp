@@ -73,7 +73,7 @@ namespace HexaLab {
                     culled = true;
                     break;
                 }
-                nav.rotate_on_face(); // next face vertex
+                nav.rotate_on_face();
             } while (nav.vert() != *begin);
             if (culled) {
                 hexa.is_visible = false;
