@@ -14,7 +14,7 @@ namespace HexaLab {
 
     struct Hexa {
         Index dart = -1;
-        bool is_visible;
+        int mark = 0;
 
         Hexa(){}
         Hexa(Index dart) { this->dart = dart; }

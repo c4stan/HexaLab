@@ -36,6 +36,8 @@ namespace HexaLab {
         Edge& edge();
         Vert& vert();
         Dart& dart() { return *_dart; }
+
+        Hexa& peek_hexa();
     };
 }
 

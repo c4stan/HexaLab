@@ -30,6 +30,7 @@ namespace HexaLab {
         Eigen::Hyperplane<float, 3> plane;
         Mesh mesh;
 		AlignedBox3f mesh_aabb;
+        int mark = 1;
 
     public:
         void set_culling_plane(const Eigen::Hyperplane<float, 3>& plane) { this->plane = plane; }

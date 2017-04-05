@@ -18,4 +18,6 @@ namespace HexaLab {
     Face& MeshNavigator::face() { return _mesh->get_face(_dart->face); }
     Edge& MeshNavigator::edge() { return _mesh->get_edge(_dart->edge); }
     Vert& MeshNavigator::vert() { return _mesh->get_vert(_dart->vert); }
+
+    Hexa& MeshNavigator::peek_hexa() { return _mesh->get_hexa(_mesh->get_dart(_dart->hexa_neighbor).hexa); }
 }

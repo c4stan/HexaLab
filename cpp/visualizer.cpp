@@ -39,18 +39,17 @@ namespace HexaLab {
         this->ibuffer.clear();
         this->normals.clear();
 
-        vector<Index> visible_faces;
-
         auto& hexas = this->mesh.get_hexas();
+        
+        // prepass
         for (unsigned int i = 0; i < hexas.size(); ++i) {
             Hexa& hexa = mesh.get_hexa(i);
-            
-            // PLANE CULL CHECK
+
             bool culled = 0;
-            MeshNavigator nav; 
+            MeshNavigator nav;
             const Vert* begin;
-            
-            // front face
+
+            // front face plane cull check
             nav = mesh.navigate(hexa);
             begin = &nav.vert();
             do {
@@ -60,12 +59,9 @@ namespace HexaLab {
                 }
                 nav.rotate_on_face();
             } while (nav.vert() != *begin);
-            if (culled) {
-                hexa.is_visible = false;
-                continue;
-            }
-            
-            // back face
+            if (culled) continue;
+
+            // back face plane cull check
             nav.rotate_on_hexa().rotate_on_hexa();
             begin = &nav.vert();
             do {
@@ -75,55 +71,67 @@ namespace HexaLab {
                 }
                 nav.rotate_on_face();
             } while (nav.vert() != *begin);
-            if (culled) {
-                hexa.is_visible = false;
-                continue;
-            }
+            if (culled) continue;
 
-            // PROXIMITY CHECK
-            nav = mesh.navigate(hexa);
-            const Face* front_face = &nav.face();
-            do {
-                if (nav.dart().hexa_neighbor == -1) {
-                    // DRAW
-                    // split the face in 2 triangles and add their indices to the ibuffer
-                    ibuffer.push_back(nav.dart().vert);
-                    nav.rotate_on_face();
-                    ibuffer.push_back(nav.dart().vert);
-                    nav.rotate_on_face();
-                    ibuffer.push_back(nav.dart().vert);
-                    ibuffer.push_back(nav.dart().vert);
-                    nav.rotate_on_face();
-                    ibuffer.push_back(nav.dart().vert);
-                    nav.rotate_on_face();
-                    ibuffer.push_back(nav.dart().vert);
-                    // normal
-                    //mesh.navigate(nav.face()).hexa() == nav.hexa() ? normals.push_back(nav.face().normal) : normals.push_back(nav.face().normal * -1);
-                    normals.push_back(nav.face().normal);
-                }
-                nav.next_hexa_face();
-
-                nav.flip_edge();
-                if (nav.dart().hexa_neighbor == -1) {
-                    // DRAW
-                    // split the face in 2 triangles and add their indices to the ibuffer
-                    ibuffer.push_back(nav.dart().vert);
-                    nav.rotate_on_face();
-                    ibuffer.push_back(nav.dart().vert);
-                    nav.rotate_on_face();
-                    ibuffer.push_back(nav.dart().vert);
-                    ibuffer.push_back(nav.dart().vert);
-                    nav.rotate_on_face();
-                    ibuffer.push_back(nav.dart().vert);
-                    nav.rotate_on_face();
-                    ibuffer.push_back(nav.dart().vert);
-                    // normal
-                    //mesh.navigate(nav.face()).hexa() == nav.hexa() ? normals.push_back(nav.face().normal) : normals.push_back(nav.face().normal * -1);
-                    normals.push_back(nav.face().normal);
-                }
-                nav.flip_edge();
-                nav.next_hexa_face();
-            } while (nav.face() != *front_face);
+            // mark the hexa as visible
+            hexa.mark = mark;
         }
+
+        // draw pass
+        for (unsigned int i = 0; i < hexas.size(); ++i) {
+            Hexa& hexa = mesh.get_hexa(i);
+            MeshNavigator nav;
+
+            if (hexa.mark != mark) continue;
+
+            nav = mesh.navigate(hexa);
+            const Face* begin = &nav.face();
+
+            do {
+                if (nav.dart().hexa_neighbor == -1 || nav.peek_hexa().mark != mark ) {
+
+                    // DRAW
+                    // split the face in 2 triangles and add their indices to the ibuffer
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    // normal
+                    mesh.navigate(nav.face()).hexa() == nav.hexa() ? normals.push_back(nav.face().normal) : normals.push_back(nav.face().normal * -1);
+                    //normals.push_back(nav.face().normal);
+                }
+                nav.next_hexa_face();
+
+                nav.flip_edge();
+                if (nav.dart().hexa_neighbor == -1 || nav.peek_hexa().mark != mark) {
+
+                    // DRAW
+                    // split the face in 2 triangles and add their indices to the ibuffer
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    // normal
+                    mesh.navigate(nav.face()).hexa() == nav.hexa() ? normals.push_back(nav.face().normal) : normals.push_back(nav.face().normal * -1);
+                    //normals.push_back(nav.face().normal);
+                }
+                nav.flip_edge();
+                nav.next_hexa_face();
+            } while (nav.face() != *begin);
+        }
+
+        ++mark;
     }
 }
