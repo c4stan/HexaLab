@@ -21,10 +21,17 @@ namespace HexaLab {
    |/     |/
    1------0 
 
-   TODO: to what extent does it actually matter ?
 */
-
-
+       
+        static constexpr Index hexa_face[6][4] = {
+            { 5, 1, 2, 6 },   // Left 
+            { 5, 4, 0, 1 },   // Bottom 
+            { 1, 0, 3, 2 },   // Front 
+            { 0, 4, 7, 3 },   // Right 
+            { 7, 6, 2, 3 },   // Top 
+            { 4, 5, 6, 7 },   // Back 
+        };
+         
     public:
         // Edges and faces are both temporarily stored into a table, 
         // hashed by their vertices and mapped to their corresponding index in the mesh being built.
@@ -60,36 +67,6 @@ namespace HexaLab {
                     && this->indices[2] == other.indices[2]
                     && this->indices[3] == other.indices[3];
             }
-        };
-        
-    private:
-        enum EDart {
-            BotRight = 0,
-            BotLeft,
-            LeftBot,
-            LeftTop,
-            TopLeft,
-            TopRight,
-            RightTop,
-            RightBot,
-        };
-
-        enum EFace {
-            Left = 0,
-            Bottom,
-            Near,
-            Right,
-            Top,
-            Far,
-        };
-
-        static constexpr Index hexa_face[6][4] = {
-            {1, 5, 6, 2},   // Left
-            {4, 5, 1, 0},   // Bottom
-            {0, 1, 2, 3},   // Front
-            {0, 4, 7, 3},   // Right
-            {7, 6, 2, 3},   // Top
-            {4, 5, 6, 7},   // Back
         };
 
         static std::unordered_map<EdgeMapKey, Index> edges_map;

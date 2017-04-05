@@ -13,10 +13,10 @@ namespace HexaLab {
 		HL_LOG("Processing...\n");
 		Builder::build(mesh, verts, indices);
 		
-		/*if (!Builder::validate(mesh)) {
+        if (!Builder::validate(mesh)) {
             return false;
-        }*/
-        
+        }
+
         update_vbuffer();
         update_view();
 
@@ -82,7 +82,7 @@ namespace HexaLab {
 
             // PROXIMITY CHECK
             nav = mesh.navigate(hexa);
-            begin = &nav.vert();
+            const Face* front_face = &nav.face();
             do {
                 if (nav.dart().hexa_neighbor == -1) {
                     // DRAW
@@ -98,10 +98,32 @@ namespace HexaLab {
                     nav.rotate_on_face();
                     ibuffer.push_back(nav.dart().vert);
                     // normal
-                    nav.hexa() == hexa ? normals.push_back(nav.face().normal) : normals.push_back(nav.face().normal * -1);
+                    //mesh.navigate(nav.face()).hexa() == nav.hexa() ? normals.push_back(nav.face().normal) : normals.push_back(nav.face().normal * -1);
+                    normals.push_back(nav.face().normal);
                 }
                 nav.next_hexa_face();
-            } while (nav.vert() != *begin);     
+
+                nav.flip_edge();
+                if (nav.dart().hexa_neighbor == -1) {
+                    // DRAW
+                    // split the face in 2 triangles and add their indices to the ibuffer
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    nav.rotate_on_face();
+                    ibuffer.push_back(nav.dart().vert);
+                    // normal
+                    //mesh.navigate(nav.face()).hexa() == nav.hexa() ? normals.push_back(nav.face().normal) : normals.push_back(nav.face().normal * -1);
+                    normals.push_back(nav.face().normal);
+                }
+                nav.flip_edge();
+                nav.next_hexa_face();
+            } while (nav.face() != *front_face);
         }
     }
 }

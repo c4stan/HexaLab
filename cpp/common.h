@@ -6,7 +6,8 @@
 
 #define HL_LOG(...) printf(__VA_ARGS__)	
 
-#define HL_ASSERT(cond) if (!(cond)) { return false; }
+#define HL_ASSERT(cond) assert(cond)
+//if (!(cond)) { return false; }
 
 #define HL_ASSERT_LOG(cond, ...) if (!(cond)) { printf(__VA_ARGS__); return false; }
 

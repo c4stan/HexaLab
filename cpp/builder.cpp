@@ -60,18 +60,19 @@ namespace HexaLab {
         // Compute face normal, if its the first
         if (search_result == faces_map.end()) {
             Vector3f normal(0, 0, 0);
-            Vector3f a = mesh.verts[face[3]].position - mesh.verts[face[0]].position;
-            Vector3f b = mesh.verts[face[1]].position - mesh.verts[face[0]].position;
-            normal += a.cross(b);
-            a = mesh.verts[face[0]].position - mesh.verts[face[1]].position;
-            b = mesh.verts[face[2]].position - mesh.verts[face[1]].position;
-            normal += a.cross(b);
-            a = mesh.verts[face[1]].position - mesh.verts[face[2]].position;
-            b = mesh.verts[face[3]].position - mesh.verts[face[2]].position;
-            normal += a.cross(b);
-            a = mesh.verts[face[2]].position - mesh.verts[face[3]].position;
-            b = mesh.verts[face[0]].position - mesh.verts[face[3]].position;
-            normal += a.cross(b);
+            Vector3f a, b;
+            a = mesh.verts[face[1]].position - mesh.verts[face[0]].position;
+            b = mesh.verts[face[3]].position - mesh.verts[face[0]].position;
+            normal += a.cross(b).normalized();
+            a = mesh.verts[face[2]].position - mesh.verts[face[1]].position;
+            b = mesh.verts[face[0]].position - mesh.verts[face[1]].position;
+            normal += a.cross(b).normalized();
+            a = mesh.verts[face[3]].position - mesh.verts[face[2]].position;
+            b = mesh.verts[face[1]].position - mesh.verts[face[2]].position;
+            normal += a.cross(b).normalized();
+            a = mesh.verts[face[0]].position - mesh.verts[face[3]].position;
+            b = mesh.verts[face[2]].position - mesh.verts[face[3]].position;
+            normal += a.cross(b).normalized();
             (normal /= 4).normalize();
             mesh.faces.back().normal = normal;
         }
@@ -80,9 +81,10 @@ namespace HexaLab {
         if (search_result != faces_map.end()) {
             Index f1_base = mesh.faces[f].dart;
 
-            for (int i = 0; i < 8; ++i) {
-                mesh.darts[f1_base + i].hexa_neighbor = f0_base + i;
-                mesh.darts[f0_base + i].hexa_neighbor = f1_base + i;
+            int i = 0, j = 9;
+            for (; i < 8; ++i, --j) {
+                mesh.darts[f1_base + i].hexa_neighbor = f0_base + j % 8;
+                mesh.darts[f0_base + j % 8].hexa_neighbor = f1_base + i;
             }
         }
 
@@ -98,6 +100,8 @@ namespace HexaLab {
         const Index h = mesh.hexas.size();
         mesh.hexas.emplace_back(mesh.darts.size());
 
+        Index base = mesh.darts.size();
+
         for (int i = 0; i < 6; ++i) {
             Index face_indices[4];
             for (int j = 0; j < 4; ++j) {
@@ -106,64 +110,50 @@ namespace HexaLab {
             add_face(mesh, h, face_indices);
         }
 
-        // TODO link faces along the hexa ...
+        // Link side faces
+        const int face_size = 8;        // darts in a face
+        const int edge_offset = 4;      // dart offset between two side edges (e.g. two left darts, two top darts, two right darts => offset == 4)
+        for (int i = 2; i < face_size * 4; i += face_size) {
+            mesh.darts[base + i].face_neighbor = base + (i + face_size + edge_offset + 1) % (face_size * 4);
+            mesh.darts[base + i + 1].face_neighbor = base + (i + face_size + edge_offset) % (face_size * 4);
+        
+            mesh.darts[base + (i + face_size + edge_offset + 1) % (face_size * 4)].face_neighbor = base + i;
+            mesh.darts[base + (i + face_size + edge_offset) % (face_size * 4)].face_neighbor = base + i + 1;
+        }
+        // Link bottom face to side faces
+        int link_offset = 38;
+        int step = 10;
+        for (int i = 0; i < face_size * 4; i += face_size) {
+            mesh.darts[base + i].face_neighbor = base + i + link_offset + 1;
+            mesh.darts[base + i + 1].face_neighbor = base + i + link_offset;
 
-        assert(mesh.darts.size() >= 48);
-        Index base_idx = mesh.darts.size() - 48;
-        Dart* base = mesh.darts.data() + base_idx;
-        base[8 * EFace::Left + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Near + EDart::LeftBot;
-        base[8 * EFace::Left + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::LeftTop;
-        base[8 * EFace::Left + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::LeftBot;
-        base[8 * EFace::Left + EDart::LeftBot].face_neighbor = base_idx + 8 * EFace::Far + EDart::LeftBot;
-        base[8 * EFace::Left + EDart::LeftTop].face_neighbor = base_idx + 8 * EFace::Far + EDart::LeftTop;
-        base[8 * EFace::Left + EDart::TopLeft].face_neighbor = base_idx + 8 * EFace::Top + EDart::LeftBot;
-        base[8 * EFace::Left + EDart::TopRight].face_neighbor = base_idx + 8 * EFace::Top + EDart::LeftTop;
-        base[8 * EFace::Left + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Near + EDart::LeftTop;
+            mesh.darts[base + i + link_offset].face_neighbor = base + i + 1;
+            mesh.darts[base + i + link_offset + 1].face_neighbor = base + i;
+            
+            link_offset -= step;
+        }
+        // Link top face to side faces
+        link_offset = 38;
+        step = 6;
+        int i = 4;
+        for (; i < face_size * 3; i += face_size) {
+            mesh.darts[base + i].face_neighbor = base + i + link_offset + 1;
+            mesh.darts[base + i + 1].face_neighbor = base + i + link_offset;
 
-        base[8 * EFace::Right + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Near + EDart::RightBot;
-        base[8 * EFace::Right + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::RightTop;
-        base[8 * EFace::Right + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::RightBot;
-        base[8 * EFace::Right + EDart::LeftBot].face_neighbor = base_idx + 8 * EFace::Far + EDart::RightBot;
-        base[8 * EFace::Right + EDart::LeftTop].face_neighbor = base_idx + 8 * EFace::Far + EDart::RightTop;
-        base[8 * EFace::Right + EDart::TopLeft].face_neighbor = base_idx + 8 * EFace::Top + EDart::RightBot;
-        base[8 * EFace::Right + EDart::TopRight].face_neighbor = base_idx + 8 * EFace::Top + EDart::RightTop;
-        base[8 * EFace::Right + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Near + EDart::RightTop;
+            mesh.darts[base + i + link_offset].face_neighbor = base + i + 1;
+            mesh.darts[base + i + link_offset + 1].face_neighbor = base + i;
 
-        base[8 * EFace::Top + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Right + EDart::TopLeft;
-        base[8 * EFace::Top + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Far + EDart::TopRight;
-        base[8 * EFace::Top + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Far + EDart::TopLeft;
-        base[8 * EFace::Top + EDart::LeftBot].face_neighbor = base_idx + 8 * EFace::Left + EDart::TopLeft;
-        base[8 * EFace::Top + EDart::LeftTop].face_neighbor = base_idx + 8 * EFace::Left + EDart::TopRight;
-        base[8 * EFace::Top + EDart::TopLeft].face_neighbor = base_idx + 8 * EFace::Near + EDart::TopLeft;
-        base[8 * EFace::Top + EDart::TopRight].face_neighbor = base_idx + 8 * EFace::Near + EDart::TopRight;
-        base[8 * EFace::Top + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Right + EDart::TopRight;
+            link_offset -= step;
+        }
+        // Last face is "irregular", requires an extra step
+        {
+            link_offset -= 8;
+            mesh.darts[base + i].face_neighbor = base + i + link_offset + 1;
+            mesh.darts[base + i + 1].face_neighbor = base + i + link_offset;
 
-        base[8 * EFace::Bottom + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Right + EDart::BotLeft;
-        base[8 * EFace::Bottom + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Far + EDart::BotRight;
-        base[8 * EFace::Bottom + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Far + EDart::BotLeft;
-        base[8 * EFace::Bottom + EDart::LeftBot].face_neighbor = base_idx + 8 * EFace::Left + EDart::BotLeft;
-        base[8 * EFace::Bottom + EDart::LeftTop].face_neighbor = base_idx + 8 * EFace::Left + EDart::BotRight;
-        base[8 * EFace::Bottom + EDart::TopLeft].face_neighbor = base_idx + 8 * EFace::Near + EDart::BotLeft;
-        base[8 * EFace::Bottom + EDart::TopRight].face_neighbor = base_idx + 8 * EFace::Near + EDart::BotRight;
-        base[8 * EFace::Bottom + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Right + EDart::BotRight;
-
-        base[8 * EFace::Near + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Right + EDart::RightBot;
-        base[8 * EFace::Near + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::TopRight;
-        base[8 * EFace::Near + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::TopLeft;
-        base[8 * EFace::Near + EDart::LeftBot].face_neighbor = base_idx + 8 * EFace::Left + EDart::RightBot;
-        base[8 * EFace::Near + EDart::LeftTop].face_neighbor = base_idx + 8 * EFace::Left + EDart::RightTop;
-        base[8 * EFace::Near + EDart::TopLeft].face_neighbor = base_idx + 8 * EFace::Top + EDart::TopLeft;
-        base[8 * EFace::Near + EDart::TopRight].face_neighbor = base_idx + 8 * EFace::Top + EDart::TopRight;
-        base[8 * EFace::Near + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Right + EDart::RightTop;
-
-        base[8 * EFace::Far + EDart::RightBot].face_neighbor = base_idx + 8 * EFace::Right + EDart::LeftBot;
-        base[8 * EFace::Far + EDart::BotRight].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::BotRight;
-        base[8 * EFace::Far + EDart::BotLeft].face_neighbor = base_idx + 8 * EFace::Bottom + EDart::BotLeft;
-        base[8 * EFace::Far + EDart::LeftBot].face_neighbor = base_idx + 8 * EFace::Left + EDart::LeftBot;
-        base[8 * EFace::Far + EDart::LeftTop].face_neighbor = base_idx + 8 * EFace::Left + EDart::LeftTop;
-        base[8 * EFace::Far + EDart::TopLeft].face_neighbor = base_idx + 8 * EFace::Top + EDart::BotLeft;
-        base[8 * EFace::Far + EDart::TopRight].face_neighbor = base_idx + 8 * EFace::Top + EDart::BotRight;
-        base[8 * EFace::Far + EDart::RightTop].face_neighbor = base_idx + 8 * EFace::Right + EDart::LeftTop;
+            mesh.darts[base + i + link_offset].face_neighbor = base + i + 1;
+            mesh.darts[base + i + link_offset + 1].face_neighbor = base + i;
+        }
     }
 
     void Builder::build(Mesh& mesh, const vector<Vector3f>& vertices, const vector<Index>& indices) {
