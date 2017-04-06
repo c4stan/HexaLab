@@ -1,10 +1,12 @@
 #ifndef _HL_MESH_H_
 #define _HL_MESH_H_
 
-#include "common.h"
-#include "dart.h"
-#include "mesh_navigator.h"
+#include <common.h>
+#include <dart.h>
+#include <mesh_navigator.h>
+
 #include <vector>
+
 #include <eigen/dense>
 #include <eigen/geometry>
 

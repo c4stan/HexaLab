@@ -1,4 +1,4 @@
-#include "visualizer.h"
+#include <visualizer.h>
 
 namespace HexaLab {
     bool Visualizer::import_mesh(std::string path) {

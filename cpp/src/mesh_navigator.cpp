@@ -1,6 +1,6 @@
-#include "mesh_navigator.h"
+#include <mesh_navigator.h>
 
-#include "mesh.h"
+#include <mesh.h>
 
 namespace HexaLab {
     MeshNavigator MeshNavigator::flip_hexa() { return MeshNavigator(_mesh->darts[_dart->hexa_neighbor], *_mesh); }

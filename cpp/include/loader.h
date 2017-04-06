@@ -1,9 +1,11 @@
 #ifndef _HL_LOADER_H_
 #define _HL_LOADER_H_
 
-#include "common.h"
-#include <eigen/dense>
+#include <common.h>
+
 #include <vector>
+
+#include <eigen/dense>
 
 namespace HexaLab { 
     using namespace Eigen;

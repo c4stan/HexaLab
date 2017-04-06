@@ -1,8 +1,8 @@
 #ifndef _HL_MESH_NAVIGATOR_H_
 #define _HL_MESH_NAVIGATOR_H_
 
-#include "common.h"
-#include "dart.h"
+#include <common.h>
+#include <dart.h>
 
 namespace HexaLab {
     class Mesh;

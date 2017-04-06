@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _HL_COMMON_H_
+#define _HL_COMMON_H_
 
 #include <stdio.h>
 #include <stdint.h>
@@ -16,3 +17,5 @@ namespace HexaLab {
 
 	using Index = int32_t;
 }
+
+#endif
