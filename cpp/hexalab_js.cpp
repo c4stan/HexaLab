@@ -22,9 +22,10 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
 	    .function("set_culling_plane", 	select_overload<void(float, float, float, float)>(&HexaLab::Visualizer::set_culling_plane))
 	    .function("get_vbuffer",		&HexaLab::Visualizer::get_vbuffer)
 	    .function("get_vbuffer_size",	&HexaLab::Visualizer::get_vbuffer_size)
-	    .function("get_ibuffer",		&HexaLab::Visualizer::get_ibuffer)
-	    .function("get_ibuffer_size",	&HexaLab::Visualizer::get_ibuffer_size)
-        .function("get_normals",        &HexaLab::Visualizer::get_normals)
+	    .function("get_faces",  		&HexaLab::Visualizer::get_faces)
+	    .function("get_faces_size",	    &HexaLab::Visualizer::get_faces_size)
+        .function("get_edges",          &HexaLab::Visualizer::get_edges)
+        .function("get_edges_size",     &HexaLab::Visualizer::get_edges_size)
         .function("get_center",         &HexaLab::Visualizer::get_center)
         ;
 

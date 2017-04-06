@@ -21,15 +21,29 @@ namespace HexaLab {
             float get_z() { return *((float*)this + 2); }
         };
 
+        struct ViewFace {
+            Index indices[4];
+            Vector3f normal;
+        };
+
+        struct ViewEdge {
+            Index indices[2];
+        };
+
+        struct ViewVert {
+            Index index;
+        };
+
     private:
         using float3 = Eigen::Vector3f;
 
-        std::vector<float3> vbuffer;
-        std::vector<Index> ibuffer;
-        std::vector<float3> normals;
-        Eigen::Hyperplane<float, 3> plane;
         Mesh mesh;
-		AlignedBox3f mesh_aabb;
+        AlignedBox3f mesh_aabb;
+        Eigen::Hyperplane<float, 3> plane;
+        std::vector<float3> vbuffer;
+        std::vector<ViewFace> faces;
+        std::vector<ViewEdge> edges;
+        std::vector<ViewVert> verts;
         int mark = 1;
 
     public:
@@ -53,10 +67,13 @@ namespace HexaLab {
         js_vec3 get_center() { return js_vec3(mesh_aabb.center()); }
     
         js_ptr get_vbuffer() { return (js_ptr)this->vbuffer.data(); }
-        size_t get_vbuffer_size() { return this->vbuffer.size(); }
-        js_ptr get_ibuffer() { return (js_ptr)this->ibuffer.data(); }
-        size_t get_ibuffer_size() { return this->ibuffer.size(); }
-        js_ptr get_normals() { return (js_ptr)this->normals.data(); }
+        size_t get_vbuffer_size() { return this->vbuffer.size() * sizeof(float3); }
+        js_ptr get_faces() { return (js_ptr)this->faces.data(); }
+        size_t get_faces_size() { return this->faces.size() * sizeof(ViewFace); }
+        js_ptr get_edges() { return (js_ptr)this->edges.data(); }
+        size_t get_edges_size() { return this->edges.size() * sizeof(ViewEdge); }
+        js_ptr get_verts() { return (js_ptr)this->verts.data(); }
+        size_t get_verts_size() { return this->verts.size() * sizeof(ViewVert); }
     };
 }
 

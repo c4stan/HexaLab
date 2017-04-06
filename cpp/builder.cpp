@@ -174,8 +174,8 @@ namespace HexaLab {
 
     bool Builder::validate(Mesh& mesh) {
         int surface_darts = 0;
-        for (size_t i = 0; i < mesh.get_darts().size(); ++i) {
-            Dart& dart = mesh.get_dart(i);
+        for (size_t i = 0; i < mesh.darts.size(); ++i) {
+            Dart& dart = mesh.darts[i];
 
             auto nav = mesh.navigate(dart);
 
@@ -198,8 +198,8 @@ namespace HexaLab {
             // TODO add more asserts
         }
 
-        for (size_t i = 0; i < mesh.get_verts().size(); ++i) {
-            Vert& v = mesh.get_vert(i);
+        for (size_t i = 0; i < mesh.verts.size(); ++i) {
+            Vert& v = mesh.verts[i];
             HL_ASSERT(v.dart != -1);
             auto nav = mesh.navigate(v);
             HL_ASSERT(nav.vert() == v);
@@ -207,8 +207,8 @@ namespace HexaLab {
             HL_ASSERT(nav.vert() == v);
         }
 
-        for (size_t i = 0; i < mesh.get_edges().size(); ++i) {
-            Edge& e = mesh.get_edge(i);
+        for (size_t i = 0; i < mesh.edges.size(); ++i) {
+            Edge& e = mesh.edges[i];
             HL_ASSERT(e.dart != -1);
             auto nav = mesh.navigate(e);
             HL_ASSERT(nav.edge() == e);
@@ -216,8 +216,8 @@ namespace HexaLab {
             HL_ASSERT(nav.edge() == e);
         }
 
-        for (size_t i = 0; i < mesh.get_faces().size(); ++i) {
-            Face& f = mesh.get_face(i);
+        for (size_t i = 0; i < mesh.faces.size(); ++i) {
+            Face& f = mesh.faces[i];
             HL_ASSERT(f.dart != -1);
             auto nav = mesh.navigate(f);
             HL_ASSERT(nav.face() == f);
@@ -226,8 +226,8 @@ namespace HexaLab {
             HL_ASSERT(nav.face() == f);
         }
 
-        for (size_t i = 0; i < mesh.get_hexas().size(); ++i) {
-            Hexa& h = mesh.get_hexa(i);
+        for (size_t i = 0; i < mesh.hexas.size(); ++i) {
+            Hexa& h = mesh.hexas[i];
             HL_ASSERT(h.dart != -1);
             auto nav = mesh.navigate(h);
             HL_ASSERT(nav.hexa() == h);
@@ -238,7 +238,7 @@ namespace HexaLab {
             }
         }
 
-        HL_LOG("[Mesh validator] Surface darts: %d/%d\n", surface_darts, mesh.get_darts().size());
+        HL_LOG("[Mesh validator] Surface darts: %d/%d\n", surface_darts, mesh.darts.size());
 
         return true;
     }
