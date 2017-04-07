@@ -159,6 +159,8 @@ namespace HexaLab {
     void Builder::build(Mesh& mesh, const vector<Vector3f>& vertices, const vector<Index>& indices) {
         assert(indices.size() % 8 == 0);
 
+        auto t0 = sample_time();
+
         edges_map.clear();
         faces_map.clear();
 
@@ -170,9 +172,15 @@ namespace HexaLab {
         for (size_t h = 0; h < hexa_count; ++h) {
             add_hexa(mesh, &indices[h * 8]);
         }
+
+        auto dt = milli_from_sample(t0);
+
+        HL_LOG("[Builder] Mesh building took %dms.\n", dt);
     }
 
     bool Builder::validate(Mesh& mesh) {
+        auto t0 = sample_time();
+
         int surface_darts = 0;
         for (size_t i = 0; i < mesh.darts.size(); ++i) {
             Dart& dart = mesh.darts[i];
@@ -238,7 +246,10 @@ namespace HexaLab {
             }
         }
 
+        auto dt = milli_from_sample(t0);
+
         HL_LOG("[Mesh validator] Surface darts: %d/%d\n", surface_darts, mesh.darts.size());
+        HL_LOG("[Mesh validator] Validation took %dms.\n", dt);
 
         return true;
     }

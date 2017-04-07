@@ -26,6 +26,7 @@ namespace HexaLab {
     }
 
     void Visualizer::update_vbuffer() {
+        auto t0 = sample_time();
         this->vbuffer.clear();
         this->mesh_aabb = AlignedBox3f();
         
@@ -33,14 +34,18 @@ namespace HexaLab {
             this->vbuffer.push_back(mesh.verts[i].position);
             this->mesh_aabb.extend(mesh.verts[i].position);
         }
+        auto dt = milli_from_sample(t0);
+        HL_LOG("[Visualizer] Vbuffer building took %dms.\n", dt);
     }
 
     void Visualizer::update_view() {
+        auto t0 = sample_time();
         this->faces.clear();
         this->edges.clear();
         this->verts.clear();
 
         // culling prepass
+        auto t_prepass = sample_time();
         for (unsigned int i = 0; i < mesh.hexas.size(); ++i) {
             Hexa& hexa = mesh.hexas[i];
 
@@ -71,8 +76,11 @@ namespace HexaLab {
             // mark the hexa as visible
             hexa.mark = mark;
         }
+        auto dt_prepass = milli_from_sample(t_prepass);
+        HL_LOG("[Visualizer] Plane culling took %dms.\n", dt_prepass);
 
         // face pass
+        auto t_facepass = sample_time();
         for (size_t i = 0; i < mesh.faces.size(); ++i) {
             MeshNavigator nav = mesh.navigate(mesh.faces[i]);
 
@@ -99,8 +107,11 @@ namespace HexaLab {
                 faces.push_back(face);
             }
         }
+        auto dt_facepass = milli_from_sample(t_facepass);
+        HL_LOG("[Visualizer] Face pass took %dms.\n", dt_prepass);
         
         // edge pass
+        auto t_edgepass = sample_time();
         for (size_t i = 0; i < mesh.edges.size(); ++i) {
             MeshNavigator nav = mesh.navigate(mesh.edges[i]);
 
@@ -120,10 +131,15 @@ namespace HexaLab {
                 nav = nav.rotate_on_edge();
             } while (nav.face() != origin);
         }
-        
+        auto dt_edgepass = milli_from_sample(t_edgepass);
+        HL_LOG("[Visualizer] Edge pass took %dms.\n", dt_edgepass);
+
         // vert pass
 
         // hexa pass
+
+        auto dt = milli_from_sample(t0);
+        HL_LOG("[Visualizer] View building took %dms in total.\n", dt);
 
         ++mark;
     }
