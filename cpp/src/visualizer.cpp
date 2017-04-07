@@ -40,6 +40,9 @@ namespace HexaLab {
 
     void Visualizer::update_view() {
         auto t0 = sample_time();
+
+        ++mark;
+        
         this->faces.clear();
         this->edges.clear();
         this->verts.clear();
@@ -136,7 +139,5 @@ namespace HexaLab {
 
         auto dt = milli_from_sample(t0);
         HL_LOG("[Visualizer] View building took %dms in total.\n", dt);
-
-        ++mark;
     }
 }

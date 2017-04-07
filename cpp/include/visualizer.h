@@ -45,7 +45,7 @@ namespace HexaLab {
         std::vector<ViewFace> faces;
         std::vector<ViewEdge> edges;
         std::vector<ViewVert> verts;
-        int mark = 1;
+        int mark = 0;
 
     public:
         void set_culling_plane(const Eigen::Hyperplane<float, 3>& plane) { this->plane = plane; }
