@@ -132,7 +132,7 @@ namespace HexaLab {
             }
         }
         auto dt_facepass = milli_from_sample(t_facepass);
-        HL_LOG("[Visualizer] Face pass took %dms.\n", dt_prepass);
+        HL_LOG("[Visualizer] Face pass took %dms.\n", dt_facepass);
 
         auto dt = milli_from_sample(t0);
         HL_LOG("[Visualizer] View building took %dms in total.\n", dt);
