@@ -23,7 +23,7 @@ namespace HexaLab {
         return std::chrono::high_resolution_clock::now();
     }
 
-    inline long long milli_from_sample(std::chrono::steady_clock::time_point t1) {
+    inline int milli_from_sample(std::chrono::steady_clock::time_point t1) {
         auto t2 = std::chrono::high_resolution_clock::now();
         return std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
     }

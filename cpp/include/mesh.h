@@ -45,6 +45,7 @@ namespace HexaLab {
 
     struct Edge {
         Index dart = -1;
+        int mark = 0;
 
         Edge(){}
         Edge(Index dart) { this->dart = dart; }
