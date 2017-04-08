@@ -63,8 +63,11 @@ namespace HexaLab {
         void update_vbuffer();
         void update_view();
 
-        js_vec3 get_center() { return js_vec3(mesh_aabb.center()); }
-    
+        js_vec3 get_object_center() { return js_vec3(mesh_aabb.center()); }
+        float get_object_size() { return mesh_aabb.diagonal().norm(); }
+        float get_plane_offset() { return plane.signedDistance(mesh_aabb.center()); }
+        js_vec3 get_plane_normal() { return js_vec3(plane.normal()); }
+
         js_ptr get_vbuffer() { return (js_ptr)this->vbuffer.data(); }
         size_t get_vbuffer_size() { return this->vbuffer.size() * sizeof(Vector3f); }
         js_ptr get_faces() { return (js_ptr)this->faces.data(); }

@@ -27,7 +27,10 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
 	    .function("get_faces_size",	    &HexaLab::Visualizer::get_faces_size)
         .function("get_edges",          &HexaLab::Visualizer::get_edges)
         .function("get_edges_size",     &HexaLab::Visualizer::get_edges_size)
-        .function("get_center",         &HexaLab::Visualizer::get_center)
+        .function("get_object_center",  &HexaLab::Visualizer::get_object_center)
+        .function("get_object_size",    &HexaLab::Visualizer::get_object_size)
+        .function("get_plane_offset",   &HexaLab::Visualizer::get_plane_offset)
+        .function("get_plane_normal",   &HexaLab::Visualizer::get_plane_normal)
         ;
 
     class_<HexaLab::Visualizer::js_vec3>("vec3")
