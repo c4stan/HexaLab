@@ -41,6 +41,7 @@ namespace HexaLab {
         Eigen::Hyperplane<float, 3> plane;
         std::vector<Vector3f> vbuffer;
         std::vector<ViewFace> faces;
+        std::vector<ViewFace> culled_faces;
         std::vector<ViewEdge> edges;
         std::vector<ViewVert> verts;
         int mark = 0;
@@ -72,6 +73,8 @@ namespace HexaLab {
         size_t get_vbuffer_size() { return this->vbuffer.size() * sizeof(Vector3f); }
         js_ptr get_faces() { return (js_ptr)this->faces.data(); }
         size_t get_faces_size() { return this->faces.size() * sizeof(ViewFace); }
+        js_ptr get_culled_faces() { return (js_ptr)this->culled_faces.data(); }
+        js_ptr get_culled_faces_size() { return this->culled_faces.size() * sizeof(ViewFace); }
         js_ptr get_edges() { return (js_ptr)this->edges.data(); }
         size_t get_edges_size() { return this->edges.size() * sizeof(ViewEdge); }
         js_ptr get_verts() { return (js_ptr)this->verts.data(); }

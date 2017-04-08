@@ -43,9 +43,10 @@ namespace HexaLab {
 
         ++mark;
         
-        this->faces.clear();
-        this->edges.clear();
-        this->verts.clear();
+        faces.clear();
+        culled_faces.clear();
+        edges.clear();
+        verts.clear();
 
         // culling prepass
         auto t_prepass = sample_time();
@@ -132,6 +133,15 @@ namespace HexaLab {
                 }
                 face.normal = nav.face().normal * -1;
                 faces.push_back(face);
+            // face was culled by the plane, is surface
+            } else if(nav.hexa().mark != mark && nav.dart().hexa_neighbor == -1) {
+                ViewFace face;
+                for (int v = 0; v < 4; ++v) {
+                    face.indices[v] = nav.dart().vert;
+                    nav = nav.rotate_on_face();
+                }
+                face.normal = nav.face().normal;
+                culled_faces.push_back(face);
             }
         }
         auto dt_facepass = milli_from_sample(t_facepass);
