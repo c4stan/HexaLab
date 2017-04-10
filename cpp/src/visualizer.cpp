@@ -2,6 +2,12 @@
 
 namespace HexaLab {
     bool Visualizer::import_mesh(std::string path) {
+
+        mesh.hexas.clear();
+        mesh.faces.clear();
+        mesh.edges.clear();
+        mesh.verts.clear();
+        mesh.darts.clear();
         
         HL_LOG("Loading %s...\n", path.c_str());
         vector<Vector3f> verts;

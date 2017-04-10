@@ -47,9 +47,9 @@ namespace HexaLab {
         int mark = 0;
 
     public:
-        void set_culling_plane(const Eigen::Hyperplane<float, 3>& plane) { this->plane = plane; }
-        void set_culling_plane(Vector3f normal, Vector3f position) { this->plane = Eigen::Hyperplane<float, 3>(normal, position); }
-        void set_culling_plane(Vector3f normal, float d) { this->plane = Eigen::Hyperplane<float, 3>(normal, d); }
+        void set_culling_plane(const Eigen::Hyperplane<float, 3>& plane)                { this->plane = plane; }
+        void set_culling_plane(Vector3f normal, Vector3f position)                      { this->plane = Eigen::Hyperplane<float, 3>(normal, position); }
+        void set_culling_plane(Vector3f normal, float d)                                { this->plane = Eigen::Hyperplane<float, 3>(normal, d); }
         void set_culling_plane(float nx, float ny, float nz, float x, float y, float z) { this->plane = Eigen::Hyperplane<float, 3>(Vector3f(nx, ny, nz), Vector3f(x, y, z)); }
         void set_culling_plane(float nx, float ny, float nz, float s) {
             float size = mesh_aabb.diagonal().norm();
