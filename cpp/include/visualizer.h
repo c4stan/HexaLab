@@ -22,34 +22,26 @@ namespace HexaLab {
             float get_z() { return z(); }
         };
 
-        struct ViewFace {
-            Index indices[4];
-            Vector3f normal;
-        };
-
-        struct ViewEdge {
-            Index indices[2];
-        };
-
-        struct ViewVert {
-            Index index;
-        };
-
     private:
         Mesh mesh;
         AlignedBox3f mesh_aabb;
         Eigen::Hyperplane<float, 3> plane;
-        std::vector<Vector3f> vbuffer;
-        std::vector<ViewFace> faces;
-        std::vector<ViewFace> culled_faces;
-        std::vector<ViewEdge> edges;
-        std::vector<ViewVert> verts;
+        std::vector<Vector3f> vert_pos;
+        std::vector<Vector3f> visible_face_pos;
+        std::vector<Vector3f> visible_face_norm;
+        std::vector<Vector3f> culled_face_pos;
+        std::vector<Vector3f> culled_face_norm;
+        std::vector<uint16_t> visible_edge_idx;
+        std::vector<uint16_t> culled_edge_idx;
         int mark = 0;
 
+        void add_visible_edge(Dart& dart);
+        void add_culled_edge(Dart& dart);
+        void add_visible_face(Dart& dart, float normal_sign);
+        void add_culled_face(Dart& dart);
+
     public:
-        void set_culling_plane(const Eigen::Hyperplane<float, 3>& plane)                { this->plane = plane; }
         void set_culling_plane(Vector3f normal, Vector3f position)                      { this->plane = Eigen::Hyperplane<float, 3>(normal, position); }
-        void set_culling_plane(Vector3f normal, float d)                                { this->plane = Eigen::Hyperplane<float, 3>(normal, d); }
         void set_culling_plane(float nx, float ny, float nz, float x, float y, float z) { this->plane = Eigen::Hyperplane<float, 3>(Vector3f(nx, ny, nz), Vector3f(x, y, z)); }
         void set_culling_plane(float nx, float ny, float nz, float s) {
             float size = mesh_aabb.diagonal().norm();
@@ -61,24 +53,30 @@ namespace HexaLab {
 
         bool import_mesh(std::string path);
 
-        void update_vbuffer();
-        void update_view();
+        void update_verts();
+        void update_components();
 
         js_vec3 get_object_center() { return js_vec3(mesh_aabb.center()); }
         float get_object_size() { return mesh_aabb.diagonal().norm(); }
-        float get_plane_offset() { return plane.signedDistance(mesh_aabb.center()); }
         js_vec3 get_plane_normal() { return js_vec3(plane.normal()); }
+        float get_plane_offset() { return plane.signedDistance(mesh_aabb.center()); }
 
-        js_ptr get_vbuffer() { return (js_ptr)this->vbuffer.data(); }
-        size_t get_vbuffer_size() { return this->vbuffer.size() * sizeof(Vector3f); }
-        js_ptr get_faces() { return (js_ptr)this->faces.data(); }
-        size_t get_faces_size() { return this->faces.size() * sizeof(ViewFace); }
-        js_ptr get_culled_faces() { return (js_ptr)this->culled_faces.data(); }
-        js_ptr get_culled_faces_size() { return this->culled_faces.size() * sizeof(ViewFace); }
-        js_ptr get_edges() { return (js_ptr)this->edges.data(); }
-        size_t get_edges_size() { return this->edges.size() * sizeof(ViewEdge); }
-        js_ptr get_verts() { return (js_ptr)this->verts.data(); }
-        size_t get_verts_size() { return this->verts.size() * sizeof(ViewVert); }
+        js_ptr get_vert_pos() { return (js_ptr)vert_pos.data(); }
+        size_t get_vert_count() { return vert_pos.size(); }
+
+        js_ptr get_visible_face_pos() { return (js_ptr)visible_face_pos.data(); }
+        js_ptr get_visible_face_norm() { return (js_ptr)visible_face_norm.data(); }
+        size_t get_visible_face_count() { return visible_face_pos.size() / 3; }
+
+        js_ptr get_culled_face_pos() { return (js_ptr)culled_face_pos.data(); }
+        js_ptr get_culled_face_norm() { return (js_ptr)culled_face_norm.data(); }
+        size_t get_culled_face_count() { return culled_face_pos.size() / 3; }
+        
+        js_ptr get_visible_edge_idx() { return (js_ptr)visible_edge_idx.data(); }
+        size_t get_visible_edge_count() { return visible_edge_idx.size() / 2; }
+        
+        js_ptr get_culled_edge_idx() { return (js_ptr)culled_edge_idx.data(); }
+        size_t get_culled_edge_count() { return culled_edge_idx.size() / 2; }
     };
 }
 

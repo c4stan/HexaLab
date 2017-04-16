@@ -25,34 +25,100 @@ namespace HexaLab {
         }
 
         HL_LOG("Preparing the view...\n");
-        update_vbuffer();
-        update_view();
+        update_verts();
+        update_components();
 
 		return true;
     }
 
-    void Visualizer::update_vbuffer() {
+    void Visualizer::update_verts() {
         auto t0 = sample_time();
-        this->vbuffer.clear();
-        this->mesh_aabb = AlignedBox3f();
+        vert_pos.clear();
+        mesh_aabb = AlignedBox3f();
         
         for (unsigned int i = 0; i < mesh.verts.size(); ++i) {
-            this->vbuffer.push_back(mesh.verts[i].position);
-            this->mesh_aabb.extend(mesh.verts[i].position);
+            vert_pos.push_back(mesh.verts[i].position);
+            mesh_aabb.extend(mesh.verts[i].position);
         }
         auto dt = milli_from_sample(t0);
         HL_LOG("[Visualizer] Vbuffer building took %dms.\n", dt);
     }
 
-    void Visualizer::update_view() {
+    void Visualizer::add_visible_edge(Dart& dart) {
+        MeshNavigator nav = mesh.navigate(dart);
+        if (nav.edge().mark != mark) {
+            nav.edge().mark = mark;
+            MeshNavigator edge_nav = nav;
+            for (int v = 0; v < 2; ++v) {
+                visible_edge_idx.push_back(edge_nav.dart().vert);
+                edge_nav = edge_nav.flip_vert();
+            }
+        }
+    }
+
+    void Visualizer::add_culled_edge(Dart& dart) {
+        MeshNavigator nav = mesh.navigate(dart);
+        if (nav.edge().mark != mark) {
+            nav.edge().mark = mark;
+            MeshNavigator edge_nav = nav;
+            std::array<Index, 2> idx;
+            for (int v = 0; v < 2; ++v) {
+                culled_edge_idx.push_back(edge_nav.dart().vert);
+                edge_nav = edge_nav.flip_vert();
+            }
+        }
+    }
+
+    void Visualizer::add_visible_face(Dart& dart, float normal_sign) {
+        MeshNavigator nav = mesh.navigate(dart);
+        nav.face().mark = mark;
+
+        for (int i = 0; i < 2; ++i) {
+            int j = 0;
+            for (; j < 2; ++j) {
+                visible_face_pos.push_back(vert_pos[nav.dart().vert]);
+                add_visible_edge(nav.dart());
+                nav = nav.rotate_on_face();
+            }
+            visible_face_pos.push_back(vert_pos[nav.dart().vert]);
+
+            Vector3f normal = nav.face().normal * normal_sign;
+            visible_face_norm.push_back(normal);
+            visible_face_norm.push_back(normal);
+            visible_face_norm.push_back(normal);
+        }
+    }
+
+    void Visualizer::add_culled_face(Dart& dart) {
+        MeshNavigator nav = mesh.navigate(dart);
+
+        for (int i = 0; i < 2; ++i) {
+            int j = 0;
+            for (; j < 2; ++j) {
+                culled_face_pos.push_back(vert_pos[nav.dart().vert]);
+                add_culled_edge(nav.dart());
+                nav = nav.rotate_on_face();
+            }
+            culled_face_pos.push_back(vert_pos[nav.dart().vert]);
+
+            Vector3f normal = nav.face().normal;
+            culled_face_norm.push_back(normal);
+            culled_face_norm.push_back(normal);
+            culled_face_norm.push_back(normal);
+        }
+    }
+
+    void Visualizer::update_components() {
         auto t0 = sample_time();
 
         ++mark;
         
-        faces.clear();
-        culled_faces.clear();
-        edges.clear();
-        verts.clear();
+        visible_face_pos.clear();
+        visible_face_norm.clear();
+        culled_face_pos.clear();
+        culled_face_norm.clear();
+        visible_edge_idx.clear();
+        culled_edge_idx.clear();
 
         // culling prepass
         auto t_prepass = sample_time();
@@ -96,58 +162,14 @@ namespace HexaLab {
 
             // hexa a visible, hexa b not existing or not visible
             if (nav.hexa().mark == mark && (nav.dart().hexa_neighbor == -1 || nav.flip_hexa().hexa().mark != mark)) {
-                nav.face().mark = mark;
-                ViewFace face;
-                for (int v = 0; v < 4; ++v) {
-                    face.indices[v] = nav.dart().vert;
-                    
-                    if (nav.edge().mark != mark) {
-                        nav.edge().mark = mark;
-                        MeshNavigator edge_nav = nav;
-                        ViewEdge edge;
-                        for (int v = 0; v < 2; ++v) {
-                            edge.indices[v] = edge_nav.dart().vert;
-                            edge_nav = edge_nav.flip_vert();
-                        }
-                        edges.push_back(edge);
-                    }
-                    
-                    nav = nav.rotate_on_face();
-                }
-                face.normal = nav.face().normal;
-                faces.push_back(face);
+                add_visible_face(nav.dart(), 1);
             // hexa a invisible, hexa b existing and visible
             } else if (nav.hexa().mark != mark && nav.dart().hexa_neighbor != -1 && nav.flip_hexa().hexa().mark == mark) {
-                nav.face().mark = mark;
                 nav = nav.flip_hexa().flip_edge();
-                ViewFace face;
-                for (int v = 0; v < 4; ++v) {
-                    face.indices[v] = nav.dart().vert;
-                    
-                    if (nav.edge().mark != mark) {
-                        nav.edge().mark = mark;
-                        MeshNavigator edge_nav = nav;
-                        ViewEdge edge;
-                        for (int v = 0; v < 2; ++v) {
-                            edge.indices[v] = edge_nav.dart().vert;
-                            edge_nav = edge_nav.flip_vert();
-                        }
-                        edges.push_back(edge);
-                    }
-                    
-                    nav = nav.rotate_on_face();
-                }
-                face.normal = nav.face().normal * -1;
-                faces.push_back(face);
-            // face was culled by the plane, is surface
+                add_visible_face(nav.dart(), -1);
+                // face was culled by the plane, is surface
             } else if(nav.hexa().mark != mark && nav.dart().hexa_neighbor == -1) {
-                ViewFace face;
-                for (int v = 0; v < 4; ++v) {
-                    face.indices[v] = nav.dart().vert;
-                    nav = nav.rotate_on_face();
-                }
-                face.normal = nav.face().normal;
-                culled_faces.push_back(face);
+                add_culled_face(nav.dart());
             }
         }
         auto dt_facepass = milli_from_sample(t_facepass);
