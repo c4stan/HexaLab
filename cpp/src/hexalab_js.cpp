@@ -18,10 +18,19 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
 	class_<HexaLab::Visualizer>("Visualizer")
         .constructor<>()
 	    .function("import_mesh",	 	    &HexaLab::Visualizer::import_mesh)
-	    .function("update_verts",    	    &HexaLab::Visualizer::update_verts)
-	    .function("update_components", 	    &HexaLab::Visualizer::update_components)
-	    .function("set_culling_plane", 	    select_overload<void(float, float, float, float)>(&HexaLab::Visualizer::set_culling_plane))
 	    
+        .function("update_verts",    	    &HexaLab::Visualizer::update_verts)
+	    .function("update_components", 	    &HexaLab::Visualizer::update_components)
+
+        .function("set_plane_position",     &HexaLab::Visualizer::set_plane_position)
+        .function("set_plane_normal",       &HexaLab::Visualizer::set_plane_normal)
+        .function("set_plane_range",        &HexaLab::Visualizer::set_plane_range)
+
+        .function("get_plane_position",     &HexaLab::Visualizer::get_plane_position)
+        .function("get_plane_normal",       &HexaLab::Visualizer::get_plane_normal)
+        .function("get_plane_range",        &HexaLab::Visualizer::get_plane_range)
+        .function("get_plane_offset",       &HexaLab::Visualizer::get_plane_offset)
+
         .function("get_vert_pos",           &HexaLab::Visualizer::get_vert_pos)
         .function("get_vert_count",		    &HexaLab::Visualizer::get_vert_count)
         .function("get_visible_face_pos",   &HexaLab::Visualizer::get_visible_face_pos)
@@ -37,8 +46,6 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
         
         .function("get_object_center",      &HexaLab::Visualizer::get_object_center)
         .function("get_object_size",        &HexaLab::Visualizer::get_object_size)
-        .function("get_plane_offset",       &HexaLab::Visualizer::get_plane_offset)
-        .function("get_plane_normal",       &HexaLab::Visualizer::get_plane_normal)
         ;
 
     class_<HexaLab::Visualizer::js_vec3>("vec3")

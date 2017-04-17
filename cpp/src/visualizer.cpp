@@ -1,6 +1,7 @@
 #include <visualizer.h>
 
 namespace HexaLab {
+    
     bool Visualizer::import_mesh(std::string path) {
 
         mesh.hexas.clear();
@@ -61,7 +62,6 @@ namespace HexaLab {
         if (nav.edge().mark != mark) {
             nav.edge().mark = mark;
             MeshNavigator edge_nav = nav;
-            std::array<Index, 2> idx;
             for (int v = 0; v < 2; ++v) {
                 culled_edge_idx.push_back(edge_nav.dart().vert);
                 edge_nav = edge_nav.flip_vert();

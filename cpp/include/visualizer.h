@@ -10,13 +10,16 @@
 #include <vector>
 
 namespace HexaLab {
+    using namespace Eigen;
+    using namespace std;
+
     class Visualizer {
     public:
-        class js_vec3 : public Eigen::Vector3f {
+        class js_vec3 : public Vector3f {
         public:
-            js_vec3() : Eigen::Vector3f() {};
-            js_vec3(const Eigen::Vector3f& v) : Eigen::Vector3f(v) {};
-            js_vec3(const Eigen::Vector3f&& v) : Eigen::Vector3f(v) {};
+            js_vec3() : Vector3f() {};
+            js_vec3(const Vector3f& v) : Vector3f(v) {};
+            js_vec3(const Vector3f&& v) : Vector3f(v) {};
             float get_x() { return x(); }
             float get_y() { return y(); }
             float get_z() { return z(); }
@@ -25,14 +28,14 @@ namespace HexaLab {
     private:
         Mesh mesh;
         AlignedBox3f mesh_aabb;
-        Eigen::Hyperplane<float, 3> plane;
-        std::vector<Vector3f> vert_pos;
-        std::vector<Vector3f> visible_face_pos;
-        std::vector<Vector3f> visible_face_norm;
-        std::vector<Vector3f> culled_face_pos;
-        std::vector<Vector3f> culled_face_norm;
-        std::vector<uint16_t> visible_edge_idx;
-        std::vector<uint16_t> culled_edge_idx;
+        Hyperplane<float, 3> plane;
+        vector<Vector3f> vert_pos;
+        vector<Vector3f> visible_face_pos;
+        vector<Vector3f> visible_face_norm;
+        vector<Vector3f> culled_face_pos;
+        vector<Vector3f> culled_face_norm;
+        vector<uint16_t> visible_edge_idx;
+        vector<uint16_t> culled_edge_idx;
         int mark = 0;
 
         void add_visible_edge(Dart& dart);
@@ -41,14 +44,29 @@ namespace HexaLab {
         void add_culled_face(Dart& dart);
 
     public:
-        void set_culling_plane(Vector3f normal, Vector3f position)                      { this->plane = Eigen::Hyperplane<float, 3>(normal, position); }
-        void set_culling_plane(float nx, float ny, float nz, float x, float y, float z) { this->plane = Eigen::Hyperplane<float, 3>(Vector3f(nx, ny, nz), Vector3f(x, y, z)); }
-        void set_culling_plane(float nx, float ny, float nz, float s) {
-            float size = mesh_aabb.diagonal().norm();
-            Vector3f center = mesh_aabb.center();
-            Vector3f normal = Vector3f(nx, ny, nz);
-            Vector3f pos = center + normal * (size * s - size / 2);
-            set_culling_plane(normal, pos);
+        void set_plane_position(float x, float y, float z) {
+            plane = Hyperplane<float, 3>(plane.normal(), Vector3f(x, y, z));
+        }
+        void set_plane_normal(float nx, float ny, float nz) {
+            Vector3f normal(nx, ny, nz);
+            normal.normalize();
+            plane = Hyperplane<float, 3>(normal, mesh_aabb.center() + normal * (mesh_aabb.diagonal().norm() * (get_plane_range() - 0.5)));
+        }
+        void set_plane_range(float range) { // range in [0,1]
+            plane = Hyperplane<float, 3>(plane.normal(), mesh_aabb.center() + plane.normal() * (mesh_aabb.diagonal().norm() * (range - 0.5)));
+        }
+        js_vec3 get_plane_position() {
+            Vector3f pos = mesh_aabb.center() + plane.normal() * (mesh_aabb.diagonal().norm() * (get_plane_range() - 0.5));
+            return js_vec3(pos);
+        }
+        js_vec3 get_plane_normal() { 
+            return (js_vec3)plane.normal();
+        }
+        float get_plane_range() {   // return the offset from the center expressed in [0,1] range (0.5 is the center)
+            return -plane.signedDistance(mesh_aabb.center()) / mesh_aabb.diagonal().norm() + 0.5; 
+        }
+        float get_plane_offset() {
+            return plane.signedDistance(mesh_aabb.center());
         }
 
         bool import_mesh(std::string path);
@@ -58,8 +76,6 @@ namespace HexaLab {
 
         js_vec3 get_object_center() { return js_vec3(mesh_aabb.center()); }
         float get_object_size() { return mesh_aabb.diagonal().norm(); }
-        js_vec3 get_plane_normal() { return js_vec3(plane.normal()); }
-        float get_plane_offset() { return plane.signedDistance(mesh_aabb.center()); }
 
         js_ptr get_vert_pos() { return (js_ptr)vert_pos.data(); }
         size_t get_vert_count() { return vert_pos.size(); }
