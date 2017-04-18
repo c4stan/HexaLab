@@ -24,12 +24,12 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
 
         .function("set_plane_position",     &HexaLab::Visualizer::set_plane_position)
         .function("set_plane_normal",       &HexaLab::Visualizer::set_plane_normal)
-        .function("set_plane_range",        &HexaLab::Visualizer::set_plane_range)
+        .function("set_plane_offset",       &HexaLab::Visualizer::set_plane_offset)
 
         .function("get_plane_position",     &HexaLab::Visualizer::get_plane_position)
         .function("get_plane_normal",       &HexaLab::Visualizer::get_plane_normal)
-        .function("get_plane_range",        &HexaLab::Visualizer::get_plane_range)
         .function("get_plane_offset",       &HexaLab::Visualizer::get_plane_offset)
+        .function("get_plane_world_offset", &HexaLab::Visualizer::get_plane_world_offset)
 
         .function("get_vert_pos",           &HexaLab::Visualizer::get_vert_pos)
         .function("get_vert_count",		    &HexaLab::Visualizer::get_vert_count)

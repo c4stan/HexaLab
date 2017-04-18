@@ -50,22 +50,22 @@ namespace HexaLab {
         void set_plane_normal(float nx, float ny, float nz) {
             Vector3f normal(nx, ny, nz);
             normal.normalize();
-            plane = Hyperplane<float, 3>(normal, mesh_aabb.center() + normal * (mesh_aabb.diagonal().norm() * (get_plane_range() - 0.5)));
+            plane = Hyperplane<float, 3>(normal, mesh_aabb.center() + normal * (mesh_aabb.diagonal().norm() * (get_plane_offset() - 0.5)));
         }
-        void set_plane_range(float range) { // range in [0,1]
-            plane = Hyperplane<float, 3>(plane.normal(), mesh_aabb.center() + plane.normal() * (mesh_aabb.diagonal().norm() * (range - 0.5)));
+        void set_plane_offset(float offset) { // offset in [0,1]
+            plane = Hyperplane<float, 3>(plane.normal(), mesh_aabb.center() + plane.normal() * (mesh_aabb.diagonal().norm() * (offset - 0.5)));
         }
         js_vec3 get_plane_position() {
-            Vector3f pos = mesh_aabb.center() + plane.normal() * (mesh_aabb.diagonal().norm() * (get_plane_range() - 0.5));
+            Vector3f pos = mesh_aabb.center() + plane.normal() * (mesh_aabb.diagonal().norm() * (get_plane_offset() - 0.5));
             return js_vec3(pos);
         }
         js_vec3 get_plane_normal() { 
             return (js_vec3)plane.normal();
         }
-        float get_plane_range() {   // return the offset from the center expressed in [0,1] range (0.5 is the center)
+        float get_plane_offset() {   // return the offset from the center expressed in [0,1] range (0.5 is the center)
             return -plane.signedDistance(mesh_aabb.center()) / mesh_aabb.diagonal().norm() + 0.5; 
         }
-        float get_plane_offset() {
+        float get_plane_world_offset() {
             return plane.signedDistance(mesh_aabb.center());
         }
 
