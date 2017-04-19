@@ -27,7 +27,7 @@ namespace HexaLab {
 
         HL_LOG("Preparing the view...\n");
         update_verts();
-        update_components();
+        //update_components();
 
 		return true;
     }
