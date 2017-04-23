@@ -208,31 +208,8 @@ namespace HexaLab {
             }
             if (c != 4) {
                 mesh.singularity_edges.push_back(SingularityElement(i, c));
-            //mesh.singularity_edges.push_back(SingularityElement(nav.dart().edge, c));
             }
         }
-        
-        /*for (int i = 0; i < mesh.singularity_edges.size(); ++i) {
-            bool alone = true;
-            for (int j = 0; j < mesh.singularity_edges.size(); ++j) {
-                if (i == j) continue;
-                Edge& e1 = mesh.edges[mesh.singularity_edges[i].idx];
-                Edge& e2 = mesh.edges[mesh.singularity_edges[j].idx];
-                MeshNavigator n1 = mesh.navigate(e1);
-                MeshNavigator n2 = mesh.navigate(e2);
-                if (n1.dart().vert == n2.dart().vert
-                    || n1.flip_vert().dart().vert == n2.flip_vert().dart().vert
-                    || n1.dart().vert == n2.flip_vert().dart().vert
-                    || n1.flip_vert().dart().vert == n2.dart().vert) {
-                    alone = false;
-                    break;
-                }
-            }
-            if (alone) {
-                int qwe = 1;
-            }
-        }*/
-        
     }
 
     bool Builder::validate(Mesh& mesh) {
