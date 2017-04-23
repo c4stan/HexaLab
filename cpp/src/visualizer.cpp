@@ -9,6 +9,9 @@ namespace HexaLab {
         mesh.edges.clear();
         mesh.verts.clear();
         mesh.darts.clear();
+        mesh.singularity_hexas.clear();
+        mesh.singularity_edges.clear();
+        mesh.singularity_verts.clear();
         
         HL_LOG("Loading %s...\n", path.c_str());
         vector<Vector3f> verts;
@@ -19,7 +22,8 @@ namespace HexaLab {
 		
 		HL_LOG("Building...\n");
 		Builder::build(mesh, verts, indices);
-		
+        Builder::singularity_search(mesh);
+
         HL_LOG("Validating...\n");
         if (!Builder::validate(mesh)) {
             return false;
@@ -27,7 +31,8 @@ namespace HexaLab {
 
         HL_LOG("Preparing the view...\n");
         update_verts();
-        //update_components();
+        update_bad_edges();
+        update_components();
 
 		return true;
     }
@@ -43,6 +48,34 @@ namespace HexaLab {
         }
         auto dt = milli_from_sample(t0);
         HL_LOG("[Visualizer] Vbuffer building took %dms.\n", dt);
+    }
+
+    void Visualizer::update_bad_edges() {
+        bad_edge_pos.clear();
+        bad_edge_color.clear();
+
+        for (size_t i = 0; i < mesh.singularity_edges.size(); ++i) {
+            const SingularityElement& e = mesh.singularity_edges[i];
+            MeshNavigator nav = mesh.navigate(mesh.edges[e.idx]);
+            for (int j = 0; j < 2; ++j) {
+                bad_edge_pos.push_back(vert_pos[nav.dart().vert]);
+                nav = nav.flip_vert();
+            }
+            int d = (4 - e.rank);
+            Vector3f color;
+            switch (d) {
+            case -1:
+                color = Vector3f(1, 0, 0);
+                break;
+            case 1:
+                color = Vector3f(0, 1, 0);
+                break;
+            default:
+                color = Vector3f(0, 0, 1);
+            }
+            bad_edge_color.push_back(color);
+            bad_edge_color.push_back(color);
+        }
     }
 
     void Visualizer::add_visible_edge(Dart& dart) {
@@ -108,6 +141,18 @@ namespace HexaLab {
         }
     }
 
+    bool Visualizer::plane_cull_test(Face& face) {
+        MeshNavigator nav = mesh.navigate(face);
+        for (int v = 0; v < 4; ++v) {
+            if (plane.signedDistance(nav.vert().position) < 0) {
+                return true;
+                break;
+            }
+            nav = nav.rotate_on_face();
+        }
+        return false;
+    }
+
     void Visualizer::update_components() {
         auto t0 = sample_time();
 
@@ -125,29 +170,11 @@ namespace HexaLab {
         for (unsigned int i = 0; i < mesh.hexas.size(); ++i) {
             Hexa& hexa = mesh.hexas[i];
 
-            bool culled = 0;
-
             // front face plane cull check
             MeshNavigator nav = mesh.navigate(hexa);
-            for (int v = 0; v < 4; ++v) {
-                if (plane.signedDistance(nav.vert().position) < 0) {
-                    culled = true;
-                    break;
-                }
-                nav = nav.rotate_on_face();
-            }
-            if (culled) continue;
-
-            // back face plane cull check
+            if (plane_cull_test(nav.face())) continue;
             nav = nav.rotate_on_hexa().rotate_on_hexa();
-            for (int v = 0; v < 4; ++v) {
-                if (plane.signedDistance(nav.vert().position) < 0) {
-                    culled = true;
-                    break;
-                }
-                nav = nav.rotate_on_face();
-            }
-            if (culled) continue;
+            if (plane_cull_test(nav.face())) continue;
 
             // mark the hexa as visible
             hexa.mark = mark;
@@ -159,7 +186,6 @@ namespace HexaLab {
         auto t_facepass = sample_time();
         for (size_t i = 0; i < mesh.faces.size(); ++i) {
             MeshNavigator nav = mesh.navigate(mesh.faces[i]);
-
             // hexa a visible, hexa b not existing or not visible
             if (nav.hexa().mark == mark && (nav.dart().hexa_neighbor == -1 || nav.flip_hexa().hexa().mark != mark)) {
                 add_visible_face(nav.dart(), 1);
@@ -168,7 +194,7 @@ namespace HexaLab {
                 nav = nav.flip_hexa().flip_edge();
                 add_visible_face(nav.dart(), -1);
                 // face was culled by the plane, is surface
-            } else if(nav.hexa().mark != mark && nav.dart().hexa_neighbor == -1) {
+            } else if (nav.hexa().mark != mark && nav.dart().hexa_neighbor == -1) {
                 add_culled_face(nav.dart());
             }
         }

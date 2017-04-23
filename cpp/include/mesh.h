@@ -76,6 +76,16 @@ namespace HexaLab {
         bool operator!=(const Vert& other) const { return !(*this == other); }
     };
     
+    struct SingularityElement {
+        Index idx;
+        int rank;
+
+        SingularityElement(Index idx, int rank) {
+            this->idx = idx;
+            this->rank = rank;
+        }
+    };
+
 class Mesh {
     friend class Builder;
 
@@ -85,6 +95,9 @@ class Mesh {
         vector<Edge> edges;
         vector<Vert> verts;
         vector<Dart> darts;
+        vector<SingularityElement> singularity_hexas;
+        vector<SingularityElement> singularity_edges;
+        vector<SingularityElement> singularity_verts;
 
         MeshNavigator navigate(Dart& dart) { return MeshNavigator(dart, *this); }
         MeshNavigator navigate(Hexa& hexa) { Dart& d = darts[hexa.dart]; return navigate(d); }

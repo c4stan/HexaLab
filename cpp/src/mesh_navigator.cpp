@@ -12,8 +12,6 @@ namespace HexaLab {
     MeshNavigator MeshNavigator::rotate_on_face() { return flip_vert().flip_edge(); }
     MeshNavigator MeshNavigator::rotate_on_hexa() { return flip_vert().flip_edge().flip_face().flip_edge(); }
 
-    MeshNavigator MeshNavigator::next_hexa_face() { return flip_vert().flip_edge().flip_face(); }
-
     Hexa& MeshNavigator::hexa() { return _mesh->hexas[_dart->hexa]; }
     Face& MeshNavigator::face() { return _mesh->faces[_dart->face]; }
     Edge& MeshNavigator::edge() { return _mesh->edges[_dart->edge]; }

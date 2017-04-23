@@ -25,11 +25,11 @@ namespace HexaLab {
        
         static constexpr Index hexa_face[6][4] = {
             { 5, 1, 2, 6 },   // Left 
-            { 5, 4, 0, 1 },   // Bottom 
             { 1, 0, 3, 2 },   // Front 
             { 0, 4, 7, 3 },   // Right 
-            { 7, 6, 2, 3 },   // Top 
             { 4, 5, 6, 7 },   // Back 
+            { 5, 4, 0, 1 },   // Bottom 
+            { 7, 6, 2, 3 },   // Top 
         };
          
     public:
@@ -41,6 +41,7 @@ namespace HexaLab {
             EdgeMapKey(const Index* indices) { 
                 this->indices[0] = indices[0];
                 this->indices[1] = indices[1];
+                std::sort(std::begin(this->indices), std::end(this->indices));
             }
 
             bool operator==(const EdgeMapKey& other) const {
@@ -79,6 +80,7 @@ namespace HexaLab {
     public:
         // indices should be a vector of size multiple of 8. each tuple of 8 consecutive indices represents an hexahedra.
         static void build(Mesh& mesh, const vector<Vector3f>& verts, const vector<Index>& indices);
+        static void singularity_search(Mesh& mesh);
         static bool validate(Mesh& mesh);
     };
 }

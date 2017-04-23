@@ -43,7 +43,14 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
         .function("get_visible_edge_count", &HexaLab::Visualizer::get_visible_edge_count)
         .function("get_culled_edge_idx",    &HexaLab::Visualizer::get_culled_edge_idx)
         .function("get_culled_edge_count",	&HexaLab::Visualizer::get_culled_edge_count)
-        
+        .function("get_bad_vert_idx",       &HexaLab::Visualizer::get_bad_vert_idx)
+        .function("get_bad_vert_count",     &HexaLab::Visualizer::get_bad_vert_count)
+        .function("get_bad_edge_pos",       &HexaLab::Visualizer::get_bad_edge_pos)
+        .function("get_bad_edge_color",     &HexaLab::Visualizer::get_bad_edge_color)
+        .function("get_bad_edge_count",     &HexaLab::Visualizer::get_bad_edge_count)
+        .function("get_bad_hexa_idx",       &HexaLab::Visualizer::get_bad_hexa_idx)
+        .function("get_bad_hexa_count",     &HexaLab::Visualizer::get_bad_hexa_count)
+
         .function("get_object_center",      &HexaLab::Visualizer::get_object_center)
         .function("get_object_size",        &HexaLab::Visualizer::get_object_size)
         ;

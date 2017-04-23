@@ -80,11 +80,21 @@ namespace HexaLab {
         // Link faces with the adjacent hexa, if there's one
         if (search_result != faces_map.end()) {
             Index f1_base = mesh.faces[f].dart;
-
-            int i = 0, j = 9;
-            for (; i < 8; ++i, --j) {
-                mesh.darts[f1_base + i].hexa_neighbor = f0_base + j % 8;
-                mesh.darts[f0_base + j % 8].hexa_neighbor = f1_base + i;
+            
+            for (int i = 0; i < 8; ++i) {
+                bool k = false;
+                Index vert = mesh.darts[f0_base + i].vert;
+                Index edge = mesh.darts[f0_base + i].edge;
+                for (int j = 0; j < 8; ++j) {
+                    if (mesh.darts[f1_base + j].vert == vert
+                        && mesh.darts[f1_base + j].edge == edge) {
+                        mesh.darts[f0_base + i].hexa_neighbor = f1_base + j;
+                        mesh.darts[f1_base + j].hexa_neighbor = f0_base + i;
+                        k = true;
+                        break;
+                    }
+                }
+                assert(k);
             }
         }
 
@@ -178,6 +188,53 @@ namespace HexaLab {
         HL_LOG("[Builder] Mesh building took %dms.\n", dt);
     }
 
+    void Builder::singularity_search(Mesh& mesh) {
+        for (size_t i = 0; i < mesh.edges.size(); ++i) {
+            int c = 0;
+            MeshNavigator nav = mesh.navigate(mesh.edges[i]);
+            Face& begin = nav.face();
+            bool is_surface = false;
+            do {
+                if (nav.dart().hexa_neighbor == -1) {
+                    is_surface = true;
+                    break;
+                }
+                ++c;
+                nav = nav.rotate_on_edge();
+            } while (nav.face() != begin);
+            
+            if (is_surface) {
+                continue;
+            }
+            if (c != 4) {
+                mesh.singularity_edges.push_back(SingularityElement(i, c));
+            //mesh.singularity_edges.push_back(SingularityElement(nav.dart().edge, c));
+            }
+        }
+        
+        /*for (int i = 0; i < mesh.singularity_edges.size(); ++i) {
+            bool alone = true;
+            for (int j = 0; j < mesh.singularity_edges.size(); ++j) {
+                if (i == j) continue;
+                Edge& e1 = mesh.edges[mesh.singularity_edges[i].idx];
+                Edge& e2 = mesh.edges[mesh.singularity_edges[j].idx];
+                MeshNavigator n1 = mesh.navigate(e1);
+                MeshNavigator n2 = mesh.navigate(e2);
+                if (n1.dart().vert == n2.dart().vert
+                    || n1.flip_vert().dart().vert == n2.flip_vert().dart().vert
+                    || n1.dart().vert == n2.flip_vert().dart().vert
+                    || n1.flip_vert().dart().vert == n2.dart().vert) {
+                    alone = false;
+                    break;
+                }
+            }
+            if (alone) {
+                int qwe = 1;
+            }
+        }*/
+        
+    }
+
     bool Builder::validate(Mesh& mesh) {
         auto t0 = sample_time();
 
@@ -185,25 +242,18 @@ namespace HexaLab {
         for (size_t i = 0; i < mesh.darts.size(); ++i) {
             Dart& dart = mesh.darts[i];
 
-            auto nav = mesh.navigate(dart);
-
-            HL_ASSERT(dart.hexa != -1);
-            HL_ASSERT(dart.face != -1);
-            HL_ASSERT(dart.edge != -1);
-            HL_ASSERT(dart.vert != -1);
-            HL_ASSERT(dart.face_neighbor != -1);
-            HL_ASSERT(dart.edge_neighbor != -1);
-            HL_ASSERT(dart.vert_neighbor != -1);
-
-            if (dart.hexa_neighbor == -1) {
-                ++surface_darts;
+            HL_ASSERT(dart.hexa != -1 && dart.hexa < mesh.hexas.size());
+            HL_ASSERT(dart.face != -1 && dart.face < mesh.faces.size());
+            HL_ASSERT(dart.edge != -1 && dart.edge < mesh.edges.size());
+            HL_ASSERT(dart.vert != -1 && dart.vert < mesh.verts.size());
+            HL_ASSERT(dart.face_neighbor != -1 && dart.face_neighbor < mesh.darts.size());
+            HL_ASSERT(dart.edge_neighbor != -1 && dart.edge_neighbor < mesh.darts.size());
+            HL_ASSERT(dart.vert_neighbor != -1 && dart.vert_neighbor < mesh.darts.size());
+            if (dart.hexa_neighbor != -1) {
+                HL_ASSERT(dart.hexa_neighbor < mesh.darts.size());
             } else {
-                nav.flip_hexa().flip_hexa();
-                HL_ASSERT(dart == nav.dart());
+                ++surface_darts;
             }
-            
-
-            // TODO add more asserts
         }
 
         for (size_t i = 0; i < mesh.verts.size(); ++i) {
@@ -211,7 +261,12 @@ namespace HexaLab {
             HL_ASSERT(v.dart != -1);
             auto nav = mesh.navigate(v);
             HL_ASSERT(nav.vert() == v);
-            nav.flip_vert().flip_vert();
+            Dart& d1 = nav.dart();
+            nav = nav.flip_vert();
+            HL_ASSERT(nav.dart().hexa == d1.hexa
+                && nav.dart().face == d1.face
+                && nav.dart().edge == d1.edge);
+            nav = nav.flip_vert();
             HL_ASSERT(nav.vert() == v);
         }
 
@@ -220,17 +275,26 @@ namespace HexaLab {
             HL_ASSERT(e.dart != -1);
             auto nav = mesh.navigate(e);
             HL_ASSERT(nav.edge() == e);
-            nav.flip_edge().flip_edge();
+            Dart& d1 = nav.dart();
+            nav = nav.flip_edge();
+            HL_ASSERT(nav.dart().hexa == d1.hexa
+                && nav.dart().face == d1.face
+                && nav.dart().vert == d1.vert);
+            nav = nav.flip_edge();
             HL_ASSERT(nav.edge() == e);
         }
 
-        for (size_t i = 0; i < mesh.faces.size(); ++i) {
+        for (size_t i = 1; i < mesh.faces.size(); ++i) {
             Face& f = mesh.faces[i];
             HL_ASSERT(f.dart != -1);
             auto nav = mesh.navigate(f);
             HL_ASSERT(nav.face() == f);
-            nav.flip_face();
-            nav.flip_face();
+            Dart& d1 = nav.dart();
+            nav = nav.flip_face();
+            HL_ASSERT(nav.dart().hexa == d1.hexa
+                && nav.dart().edge == d1.edge
+                && nav.dart().vert == d1.vert);
+            nav = nav.flip_face();
             HL_ASSERT(nav.face() == f);
         }
 
@@ -240,8 +304,12 @@ namespace HexaLab {
             auto nav = mesh.navigate(h);
             HL_ASSERT(nav.hexa() == h);
             if (nav.dart().hexa_neighbor != -1) {
-                nav.flip_hexa();
-                nav.flip_hexa();
+                Dart& d1 = nav.dart();
+                nav = nav.flip_hexa();
+                HL_ASSERT(nav.dart().face == d1.face
+                    && nav.dart().edge == d1.edge
+                    && nav.dart().vert == d1.vert);
+                nav = nav.flip_hexa();
                 HL_ASSERT(nav.hexa() == h);
             }
         }
