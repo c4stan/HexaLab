@@ -29,17 +29,27 @@ namespace HexaLab {
         Mesh mesh;
         AlignedBox3f mesh_aabb;
         Hyperplane<float, 3> plane;
+
         vector<Vector3f> vert_pos;
+
         vector<Vector3f> visible_face_pos;
         vector<Vector3f> visible_face_norm;
+        vector<Vector3f> visible_face_color;
+
         vector<Vector3f> culled_face_pos;
         vector<Vector3f> culled_face_norm;
+
         vector<uint16_t> visible_edge_idx;
+
         vector<uint16_t> culled_edge_idx;
+
         vector<Vector3f> bad_edge_pos;
         vector<Vector3f> bad_edge_color;
-        vector<uint16_t> bad_vert_idx;
-        vector<uint16_t> bad_hexa_idx;
+
+        vector<Vector3f> bad_hexa_face_pos;
+        vector<Vector3f> bad_hexa_face_norm;
+        vector<Vector3f> bad_hexa_face_color;
+
         int mark = 0;
 
         void add_visible_edge(Dart& dart);
@@ -76,9 +86,8 @@ namespace HexaLab {
 
         bool import_mesh(std::string path);
 
-        void update_verts();
-        void update_components();
-        void update_bad_edges();
+        void update_statics();
+        void update_dynamics();
         
         js_vec3 get_object_center() { return js_vec3(mesh_aabb.center()); }
         float get_object_size() { return mesh_aabb.diagonal().norm(); }
@@ -88,6 +97,7 @@ namespace HexaLab {
 
         js_ptr get_visible_face_pos() { return (js_ptr)visible_face_pos.data(); }
         js_ptr get_visible_face_norm() { return (js_ptr)visible_face_norm.data(); }
+        js_ptr get_visible_face_color() { return (js_ptr)visible_face_color.data(); }
         size_t get_visible_face_count() { return visible_face_pos.size() / 3; }
 
         js_ptr get_culled_face_pos() { return (js_ptr)culled_face_pos.data(); }
@@ -100,16 +110,14 @@ namespace HexaLab {
         js_ptr get_culled_edge_idx() { return (js_ptr)culled_edge_idx.data(); }
         size_t get_culled_edge_count() { return culled_edge_idx.size() / 2; }
 
-        js_ptr get_bad_vert_idx() { return (js_ptr)bad_vert_idx.data(); }
-        size_t get_bad_vert_count() { return bad_vert_idx.size(); }
-
         js_ptr get_bad_edge_pos() { return (js_ptr)bad_edge_pos.data(); }
         js_ptr get_bad_edge_color() { return (js_ptr)bad_edge_color.data(); }
         size_t get_bad_edge_count() { return bad_edge_pos.size() / 2; }
 
-        js_ptr get_bad_hexa_idx() { return (js_ptr)bad_hexa_idx.data(); }
-        size_t get_bad_hexa_count() { return bad_hexa_idx.size() / 8; }
-
+        js_ptr get_bad_hexa_face_pos() { return (js_ptr)bad_hexa_face_pos.data(); }
+        js_ptr get_bad_hexa_face_norm() { return (js_ptr)bad_hexa_face_norm.data(); }
+        js_ptr get_bad_hexa_face_color() { return (js_ptr)bad_hexa_face_color.data(); }
+        js_ptr get_bad_hexa_face_count() { return (js_ptr)bad_hexa_face_pos.size() / 3; }
     };
 }
 

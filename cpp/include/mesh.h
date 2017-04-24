@@ -17,6 +17,8 @@ namespace HexaLab {
     struct Hexa {
         Index dart = -1;
         int mark = 0;
+        float scaled_jacobian = 0;
+        int hexa_count = 0;
 
         Hexa(){}
         Hexa(Index dart) { this->dart = dart; }
@@ -30,7 +32,6 @@ namespace HexaLab {
     struct Face {
         Index dart = -1;
         Vector3f normal;
-        int mark = 0;
 
         Face(){}
         Face(Index dart) { this->dart = dart; }
@@ -46,6 +47,8 @@ namespace HexaLab {
     struct Edge {
         Index dart = -1;
         int mark = 0;
+        int face_count = 0;
+        bool surface = false;
 
         Edge(){}
         Edge(Index dart) { this->dart = dart; }
@@ -95,9 +98,6 @@ class Mesh {
         vector<Edge> edges;
         vector<Vert> verts;
         vector<Dart> darts;
-        vector<SingularityElement> singularity_hexas;
-        vector<SingularityElement> singularity_edges;
-        vector<SingularityElement> singularity_verts;
 
         MeshNavigator navigate(Dart& dart) { return MeshNavigator(dart, *this); }
         MeshNavigator navigate(Hexa& hexa) { Dart& d = darts[hexa.dart]; return navigate(d); }

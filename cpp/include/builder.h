@@ -80,7 +80,6 @@ namespace HexaLab {
     public:
         // indices should be a vector of size multiple of 8. each tuple of 8 consecutive indices represents an hexahedra.
         static void build(Mesh& mesh, const vector<Vector3f>& verts, const vector<Index>& indices);
-        static void singularity_search(Mesh& mesh);
         static bool validate(Mesh& mesh);
     };
 }

@@ -9,9 +9,6 @@ namespace HexaLab {
         mesh.edges.clear();
         mesh.verts.clear();
         mesh.darts.clear();
-        mesh.singularity_hexas.clear();
-        mesh.singularity_edges.clear();
-        mesh.singularity_verts.clear();
         
         HL_LOG("Loading %s...\n", path.c_str());
         vector<Vector3f> verts;
@@ -22,7 +19,6 @@ namespace HexaLab {
 		
 		HL_LOG("Building...\n");
 		Builder::build(mesh, verts, indices);
-        Builder::singularity_search(mesh);
 
         HL_LOG("Validating...\n");
         if (!Builder::validate(mesh)) {
@@ -30,14 +26,13 @@ namespace HexaLab {
         }
 
         HL_LOG("Preparing the view...\n");
-        update_verts();
-        update_bad_edges();
-        update_components();
+        update_statics();
+        update_dynamics();
 
 		return true;
     }
 
-    void Visualizer::update_verts() {
+    void Visualizer::update_statics() {
         auto t0 = sample_time();
         vert_pos.clear();
         mesh_aabb = AlignedBox3f();
@@ -48,20 +43,19 @@ namespace HexaLab {
         }
         auto dt = milli_from_sample(t0);
         HL_LOG("[Visualizer] Vbuffer building took %dms.\n", dt);
-    }
-
-    void Visualizer::update_bad_edges() {
+    
         bad_edge_pos.clear();
         bad_edge_color.clear();
 
-        for (size_t i = 0; i < mesh.singularity_edges.size(); ++i) {
-            const SingularityElement& e = mesh.singularity_edges[i];
-            MeshNavigator nav = mesh.navigate(mesh.edges[e.idx]);
+        for (size_t i = 0; i < mesh.edges.size(); ++i) {
+            MeshNavigator nav = mesh.navigate(mesh.edges[i]);
+            if (nav.edge().face_count == 4) continue;
+            if (nav.edge().surface) continue;
             for (int j = 0; j < 2; ++j) {
                 bad_edge_pos.push_back(vert_pos[nav.dart().vert]);
                 nav = nav.flip_vert();
             }
-            int d = (4 - e.rank);
+            int d = (4 - nav.edge().face_count);
             Vector3f color;
             switch (d) {
             case -1:
@@ -75,6 +69,11 @@ namespace HexaLab {
             }
             bad_edge_color.push_back(color);
             bad_edge_color.push_back(color);
+        }
+
+        for (size_t i = 0; i < mesh.hexas.size(); ++i) {
+            if (mesh.hexas[i].scaled_jacobian > 0.5) continue;
+
         }
     }
 
@@ -104,7 +103,6 @@ namespace HexaLab {
 
     void Visualizer::add_visible_face(Dart& dart, float normal_sign) {
         MeshNavigator nav = mesh.navigate(dart);
-        nav.face().mark = mark;
 
         for (int i = 0; i < 2; ++i) {
             int j = 0;
@@ -119,6 +117,11 @@ namespace HexaLab {
             visible_face_norm.push_back(normal);
             visible_face_norm.push_back(normal);
             visible_face_norm.push_back(normal);
+
+            Vector3f color = Vector3f(1 - nav.hexa().scaled_jacobian, 0, nav.hexa().scaled_jacobian);
+            visible_face_color.push_back(color);
+            visible_face_color.push_back(color);
+            visible_face_color.push_back(color);
         }
     }
 
@@ -153,13 +156,14 @@ namespace HexaLab {
         return false;
     }
 
-    void Visualizer::update_components() {
+    void Visualizer::update_dynamics() {
         auto t0 = sample_time();
 
         ++mark;
         
         visible_face_pos.clear();
         visible_face_norm.clear();
+        visible_face_color.clear();
         culled_face_pos.clear();
         culled_face_norm.clear();
         visible_edge_idx.clear();

@@ -9,6 +9,46 @@ namespace HexaLab {
 
     constexpr Index Builder::hexa_face[6][4];
 
+    static float scaled_jacobian(const Vector3f& p0, const Vector3f& p1, const Vector3f& p2, const Vector3f& p3,
+        const Vector3f& p4, const Vector3f& p5, const Vector3f& p6, const Vector3f& p7) {
+        // edges
+        Vector3f L0 = p1 - p0;    Vector3f L4 = p4 - p0;    Vector3f L8 = p5 - p4;
+        Vector3f L1 = p2 - p1;    Vector3f L5 = p5 - p1;    Vector3f L9 = p6 - p5;
+        Vector3f L2 = p3 - p2;    Vector3f L6 = p6 - p2;    Vector3f L10 = p7 - p6;
+        Vector3f L3 = p3 - p0;    Vector3f L7 = p7 - p3;    Vector3f L11 = p7 - p4;
+
+        // cross-derivatives
+        Vector3f X1 = (p1 - p0) + (p2 - p3) + (p5 - p4) + (p6 - p7);
+        Vector3f X2 = (p3 - p0) + (p2 - p1) + (p7 - p4) + (p6 - p5);
+        Vector3f X3 = (p4 - p0) + (p5 - p1) + (p6 - p2) + (p7 - p3);
+
+        L0.normalize();     L4.normalize();     L8.normalize();
+        L1.normalize();     L5.normalize();     L9.normalize();
+        L2.normalize();     L6.normalize();     L10.normalize();
+        L3.normalize();     L7.normalize();     L11.normalize();
+        X1.normalize();     X2.normalize();     X3.normalize();
+
+        // normalized jacobian matrices determinants
+        float alpha[9] =
+        {
+            L0.dot(L3.cross(L4)),
+            L1.dot(-L0.cross(L5)),
+            L2.dot(-L1.cross(L6)),
+            -L3.dot(-L2.cross(L7)),
+            L11.dot(L8.cross(-L4)),
+            -L8.dot(L9.cross(-L5)),
+            -L9.dot(L10.cross(-L6)),
+            -L10.dot(-L11.cross(-L7)),
+            X1.dot(X2.cross(X3))
+        };
+
+        float msj = *std::min_element(alpha, alpha + 9);
+
+        if (msj > 1.1) msj = -1.0;
+
+        return msj;
+    }
+
     void Builder::add_edge(Mesh& mesh, Index h, Index f, const Index* edge) {
         // Lookup/add the edge
         Index e;
@@ -183,33 +223,41 @@ namespace HexaLab {
             add_hexa(mesh, &indices[h * 8]);
         }
 
+        for (size_t i = 0; i < hexa_count; ++i) {
+            mesh.hexas[i].scaled_jacobian =  scaled_jacobian(
+                vertices[indices[i * 8 + 0]],
+                vertices[indices[i * 8 + 1]],
+                vertices[indices[i * 8 + 2]],
+                vertices[indices[i * 8 + 3]],
+                vertices[indices[i * 8 + 4]],
+                vertices[indices[i * 8 + 5]],
+                vertices[indices[i * 8 + 6]],
+                vertices[indices[i * 8 + 7]]
+            );
+            MeshNavigator nav = mesh.navigate(mesh.hexas[i]);
+            for (int j = 0; j < 6; ++j) {
+                if (nav.dart().hexa_neighbor != -1) {
+                    ++nav.hexa().hexa_count;
+                }
+                nav = nav.next_hexa_face();
+            }
+        }
+
+        for (size_t i = 0; i < mesh.edges.size(); ++i) {
+            MeshNavigator nav = mesh.navigate(mesh.edges[i]);
+            Face& begin = nav.face();
+            do {
+                if (nav.dart().hexa_neighbor == -1) {
+                    nav.edge().surface = true;
+                }
+                nav = nav.rotate_on_edge();
+                ++mesh.edges[i].face_count;
+            } while (nav.face() != begin);
+        }
+
         auto dt = milli_from_sample(t0);
 
         HL_LOG("[Builder] Mesh building took %dms.\n", dt);
-    }
-
-    void Builder::singularity_search(Mesh& mesh) {
-        for (size_t i = 0; i < mesh.edges.size(); ++i) {
-            int c = 0;
-            MeshNavigator nav = mesh.navigate(mesh.edges[i]);
-            Face& begin = nav.face();
-            bool is_surface = false;
-            do {
-                if (nav.dart().hexa_neighbor == -1) {
-                    is_surface = true;
-                    break;
-                }
-                ++c;
-                nav = nav.rotate_on_edge();
-            } while (nav.face() != begin);
-            
-            if (is_surface) {
-                continue;
-            }
-            if (c != 4) {
-                mesh.singularity_edges.push_back(SingularityElement(i, c));
-            }
-        }
     }
 
     bool Builder::validate(Mesh& mesh) {

@@ -28,6 +28,8 @@ namespace HexaLab {
         MeshNavigator rotate_on_edge();
         MeshNavigator rotate_on_face();
         MeshNavigator rotate_on_hexa();
+        
+        MeshNavigator next_hexa_face();
 
         Hexa& hexa();
         Face& face();
