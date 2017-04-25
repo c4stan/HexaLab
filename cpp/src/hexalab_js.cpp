@@ -19,8 +19,7 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
         .constructor<>()
 	    .function("import_mesh",	 	    &HexaLab::Visualizer::import_mesh)
 	    
-        .function("update_verts",    	    &HexaLab::Visualizer::update_verts)
-	    .function("update_components", 	    &HexaLab::Visualizer::update_components)
+	    .function("update_dynamic_buffers", &HexaLab::Visualizer::update_dynamic_buffers)
 
         .function("set_plane_position",     &HexaLab::Visualizer::set_plane_position)
         .function("set_plane_normal",       &HexaLab::Visualizer::set_plane_normal)

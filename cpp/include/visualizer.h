@@ -58,6 +58,8 @@ namespace HexaLab {
         void add_culled_face(Dart& dart);
         bool plane_cull_test(Face& face);
 
+        void update_static_buffers();
+
     public:
         void set_plane_position(float x, float y, float z) {
             plane = Hyperplane<float, 3>(plane.normal(), Vector3f(x, y, z));
@@ -86,8 +88,7 @@ namespace HexaLab {
 
         bool import_mesh(std::string path);
 
-        void update_statics();
-        void update_dynamics();
+        void update_dynamic_buffers();
         
         js_vec3 get_object_center() { return js_vec3(mesh_aabb.center()); }
         float get_object_size() { return mesh_aabb.diagonal().norm(); }

@@ -26,13 +26,13 @@ namespace HexaLab {
         }
 
         HL_LOG("Preparing the view...\n");
-        update_statics();
-        update_dynamics();
+        update_static_buffers();
+        update_dynamic_buffers();
 
 		return true;
     }
 
-    void Visualizer::update_statics() {
+    void Visualizer::update_static_buffers() {
         auto t0 = sample_time();
         vert_pos.clear();
         mesh_aabb = AlignedBox3f();
@@ -156,7 +156,7 @@ namespace HexaLab {
         return false;
     }
 
-    void Visualizer::update_dynamics() {
+    void Visualizer::update_dynamic_buffers() {
         auto t0 = sample_time();
 
         ++mark;
