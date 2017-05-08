@@ -3,6 +3,7 @@
 
 #include <common.h>
 #include <dart.h>
+#include <vector>
 
 namespace HexaLab {
     class Mesh;
