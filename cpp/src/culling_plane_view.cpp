@@ -3,9 +3,11 @@
 namespace HexaLab {
     void CullingPlaneView::set_mesh(js_ptr mesh_ptr) {
         this->mesh = (Mesh*)mesh_ptr;
+        
         hexa_marks.clear();
         hexa_marks.resize(mesh->hexas.size());
         std::fill(hexa_marks.begin(), hexa_marks.end(), 0);
+        
         edge_marks.clear();
         edge_marks.resize(mesh->edges.size());
         std::fill(edge_marks.begin(), edge_marks.end(), 0);
@@ -13,6 +15,31 @@ namespace HexaLab {
         aabb = AlignedBox3f();
         for (size_t i = 0; i < mesh->verts.size(); ++i) {
             aabb.extend(mesh->verts[i].position);
+        }
+
+        singularity_model.clear();
+        for (size_t i = 0; i < mesh->edges.size(); ++i) {
+            MeshNavigator nav = mesh->navigate(mesh->edges[i]);
+            if (nav.edge().face_count == 4) continue;
+            if (nav.edge().surface) continue;
+            for (int j = 0; j < 2; ++j) {
+                singularity_model.wireframe_vert_pos.push_back(mesh->verts[nav.dart().vert].position);
+                nav = nav.flip_vert();
+            }
+            int d = (4 - nav.edge().face_count);
+            Vector3f color;
+            switch (d) {
+            case -1:
+                color = Vector3f(1, 0, 0);
+                break;
+            case 1:
+                color = Vector3f(0, 1, 0);
+                break;
+            default:
+                color = Vector3f(0, 0, 1);
+            }
+            singularity_model.wireframe_vert_color.push_back(color);
+            singularity_model.wireframe_vert_color.push_back(color);
         }
     }
 

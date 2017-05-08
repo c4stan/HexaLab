@@ -14,6 +14,7 @@ namespace HexaLab {
     private:
         Model straight_model;
         Model hidden_model;
+        Model singularity_model;
         Hyperplane<float, 3> plane;
         vector<uint32_t> edge_marks;
         vector<uint32_t> hexa_marks;
@@ -21,9 +22,6 @@ namespace HexaLab {
 
     public:
         CullingPlaneView() : IView("Culling Plane View") {}
-
-        //float get_size() { return aabb.diagonal().norm(); };
-        //Vector3f get_center() { return aabb.center(); };
 
         void set_plane_position(float x, float y, float z) {
             plane = Hyperplane<float, 3>(plane.normal(), Vector3f(x, y, z));
@@ -55,6 +53,7 @@ namespace HexaLab {
 
         Model* get_straight_model() { return &straight_model; }
         Model* get_hidden_model() { return &hidden_model; }
+        Model* get_singularity_model() { return &singularity_model; }
     
     private:
         bool plane_cull_test(Face& face);
