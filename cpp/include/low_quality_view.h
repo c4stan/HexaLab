@@ -8,14 +8,15 @@
 namespace HexaLab {
     class LowQualityView : public IView {
     private:
-        Model lowq_model;
+        Model visible_model;
         Model hidden_model;
 
-        void add_lowq_face(Dart& dart, float normal_sign);
-        void add_lowq_wireframe(Dart& dart);
+        void add_visible_face(Dart& dart, float normal_sign);
+        void add_visible_wireframe(Dart& dart);
         void add_hidden_face(Dart& dart);
         void add_hidden_wireframe(Dart& dart);
 
+        vector<uint32_t> hexa_marks;
         vector<uint32_t> edge_marks;
 
         float mark = 0;
@@ -28,8 +29,8 @@ namespace HexaLab {
 
         float quality_threshold;
 
-        Model& get_low_quality_model() { return lowq_model; }
-        Model& get_hidden_model() { return hidden_model; }
+        Model* get_visible_model() { return &visible_model; }
+        Model* get_hidden_model() { return &hidden_model; }
     };
 }
 
