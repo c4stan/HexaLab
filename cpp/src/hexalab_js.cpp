@@ -6,6 +6,7 @@
 
 #include <culling_plane_view.h>
 #include <low_quality_view.h>
+#include <stats_view.h>
 
 #include <vector>
 #include <eigen/dense>
@@ -73,7 +74,8 @@ template<typename T>
 js_ptr buffer_data(std::vector<T>& v) {
     return (js_ptr)v.data();
 }
-size_t buffer_size(std::vector<Vector3f>& v) {
+template<typename T>
+size_t buffer_size(std::vector<T>& v) {
     return v.size();
 }
 
@@ -100,7 +102,7 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
     class_<std::vector<Vector3f>>("buffer3f")
         .constructor<>()
         .function("data", &buffer_data<Vector3f>)
-        .function("size", &buffer_size)
+        .function("size", &buffer_size<Vector3f>)
         ;
     
     class_<HexaLab::Model>("Model")
@@ -142,6 +144,22 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
         .function("get_visible_model", &HexaLab::LowQualityView::get_visible_model, allow_raw_pointers())
         .function("get_hidden_model", &HexaLab::LowQualityView::get_hidden_model, allow_raw_pointers())
         .property("quality_threshold",      &HexaLab::LowQualityView::quality_threshold)
+        ;
+
+    class_<HexaLab::StatsView>("StatsView")
+        .constructor<>()
+        .function("get_name", (js_ptr(HexaLab::StatsView::*)())(&HexaLab::IView::get_name), allow_raw_pointers())
+        .function("get_size", static_cast<float(HexaLab::StatsView::*)()>(&HexaLab::IView::get_size))
+        .function("get_center", static_cast<Eigen::Vector3f(HexaLab::StatsView::*)()>(&HexaLab::IView::get_center))
+        .function("set_mesh", &HexaLab::StatsView::set_mesh, allow_raw_pointers())
+        .function("update", &HexaLab::StatsView::update)
+        .function("get_hexa_quality", &HexaLab::StatsView::get_hexa_quality, allow_raw_pointers())
+        ;
+
+    class_<std::vector<float>>("bufferf")
+        .constructor<>()
+        .function("data", &buffer_data<float>)
+        .function("size", &buffer_size<float>)
         ;
 
 }

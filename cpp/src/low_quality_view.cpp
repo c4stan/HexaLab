@@ -108,8 +108,6 @@ namespace HexaLab {
                 add_hidden_face(nav.dart());
             }
         }
-        HL_LOG("AYYYYY");
-        HL_LOG("visible verts: %d, hidden verts: %d", visible_model.surface_vert_pos.size(), hidden_model.surface_vert_pos.size());
         auto dt_draw = milli_from_sample(t_draw);
         HL_LOG("[%s] Face pass took %dms", name, dt_draw);
     }
