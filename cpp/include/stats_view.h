@@ -9,7 +9,7 @@ namespace HexaLab {
         vector<float> hexa_quality;
 
     public:
-        StatsView() : IView("Stats View") {}
+        StatsView() : IView("Stats") {}
 
         void set_mesh(js_ptr mesh) {
             this->mesh = (Mesh*)mesh;

@@ -3,25 +3,12 @@
 namespace HexaLab {
     void LowQualityView::set_mesh(js_ptr mesh_ptr) {
         this->mesh = (Mesh*)mesh_ptr;
-        // TODO compute quality here instead of inside the builder? and split quality from hexa?
-        hexa_marks.clear();
-        hexa_marks.resize(mesh->hexas.size());
-        std::fill(hexa_marks.begin(), hexa_marks.end(), 0);
-
-        edge_marks.clear();
-        edge_marks.resize(mesh->edges.size());
-        std::fill(edge_marks.begin(), edge_marks.end(), 0);
-
-        aabb = AlignedBox3f();
-        for (size_t i = 0; i < mesh->verts.size(); ++i) {
-            aabb.extend(mesh->verts[i].position);
-        }
     }
 
     void LowQualityView::add_visible_wireframe(Dart& dart) {
         MeshNavigator nav = mesh->navigate(dart);
-        if (edge_marks[nav.dart().edge] != mark) {
-            edge_marks[nav.dart().edge] = mark;
+        if (nav.edge().mark != mesh->mark) {
+            nav.edge().mark = mesh->mark;
             for (int v = 0; v < 2; ++v) {
                 visible_model.wireframe_vert_pos.push_back(mesh->verts[nav.dart().vert].position);
                 nav = nav.flip_vert();
@@ -31,8 +18,8 @@ namespace HexaLab {
 
     void LowQualityView::add_hidden_wireframe(Dart& dart) {
         MeshNavigator nav = mesh->navigate(dart);
-        if (edge_marks[nav.dart().edge] != mark) {
-            edge_marks[nav.dart().edge] = mark;
+        if (nav.edge().mark != mesh->mark) {
+            nav.edge().mark = mesh->mark;
             for (int v = 0; v < 2; ++v) {
                 hidden_model.wireframe_vert_pos.push_back(mesh->verts[nav.dart().vert].position);
                 nav = nav.flip_vert();
@@ -42,7 +29,6 @@ namespace HexaLab {
 
     void LowQualityView::add_visible_face(Dart& dart, float normal_sign) {
         MeshNavigator nav = mesh->navigate(dart);
-
         for (int i = 0; i < 2; ++i) {
             int j = 0;
             for (; j < 2; ++j) {
@@ -88,7 +74,7 @@ namespace HexaLab {
             return;
         }
 
-        ++mark;
+        ++mesh->mark;
 
         visible_model.clear();
         hidden_model.clear();

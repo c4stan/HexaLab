@@ -3,19 +3,6 @@
 namespace HexaLab {
     void CullingPlaneView::set_mesh(js_ptr mesh_ptr) {
         this->mesh = (Mesh*)mesh_ptr;
-        
-        hexa_marks.clear();
-        hexa_marks.resize(mesh->hexas.size());
-        std::fill(hexa_marks.begin(), hexa_marks.end(), 0);
-        
-        edge_marks.clear();
-        edge_marks.resize(mesh->edges.size());
-        std::fill(edge_marks.begin(), edge_marks.end(), 0);
-
-        aabb = AlignedBox3f();
-        for (size_t i = 0; i < mesh->verts.size(); ++i) {
-            aabb.extend(mesh->verts[i].position);
-        }
 
         singularity_model.clear();
         for (size_t i = 0; i < mesh->edges.size(); ++i) {
@@ -81,8 +68,8 @@ namespace HexaLab {
 
     void CullingPlaneView::add_straight_wireframe(Dart& dart) {
         MeshNavigator nav = mesh->navigate(dart);
-        if (edge_marks[nav.dart().edge] != mark) {
-            edge_marks[nav.dart().edge] = mark;
+        if (nav.edge().mark != mesh->mark) {
+            nav.edge().mark = mesh->mark;
             MeshNavigator edge_nav = nav;
             for (int v = 0; v < 2; ++v) {
                 straight_model.wireframe_vert_pos.push_back(mesh->verts[edge_nav.dart().vert].position);
@@ -113,7 +100,7 @@ namespace HexaLab {
     void CullingPlaneView::add_hidden_wireframe(Dart& dart) {
         MeshNavigator nav = mesh->navigate(dart);
         //if (edge_marks[nav.dart().edge] != mark) {
-            edge_marks[nav.dart().edge] = mark;
+            nav.edge().mark = mesh->mark;
             MeshNavigator edge_nav = nav;
             for (int v = 0; v < 2; ++v) {
                 hidden_model.wireframe_vert_pos.push_back(mesh->verts[edge_nav.dart().vert].position);
@@ -127,11 +114,11 @@ namespace HexaLab {
             return;
         }
 
-        ++mark;
+        ++mesh->mark;
         
         straight_model.clear();
         hidden_model.clear();
-        
+        int qwe = 0;
         // plane culling
         auto t_culling = sample_time();
         for (unsigned int i = 0; i < mesh->hexas.size(); ++i) {
@@ -139,12 +126,12 @@ namespace HexaLab {
 
             // front face plane cull check
             MeshNavigator nav = mesh->navigate(hexa);
-            if (plane_cull_test(nav.face())) continue;
+            if (plane_cull_test(nav.face())) { ++qwe;  continue; }
             nav = nav.rotate_on_hexa().rotate_on_hexa();
-            if (plane_cull_test(nav.face())) continue;
+            if (plane_cull_test(nav.face())) { ++qwe;  continue; }
 
             // mark the hexa as visible
-            hexa_marks[i] = mark;
+            nav.hexa().mark = mesh->mark;
         }
         auto dt_culling = milli_from_sample(t_culling);
         HL_LOG("[%s] Culling took %dms.\n", name, dt_culling);
@@ -154,14 +141,14 @@ namespace HexaLab {
         for (size_t i = 0; i < mesh->faces.size(); ++i) {
             MeshNavigator nav = mesh->navigate(mesh->faces[i]);
             // hexa a visible, hexa b not existing or not visible
-            if (hexa_marks[nav.dart().hexa] == mark && (nav.dart().hexa_neighbor == -1 || hexa_marks[nav.flip_hexa().dart().hexa] != mark)) {
+            if (nav.hexa().mark == mesh->mark && (nav.dart().hexa_neighbor == -1 || nav.flip_hexa().hexa().mark != mesh->mark)) {
                 add_straight_face(nav.dart(), 1);
                 // hexa a invisible, hexa b existing and visible
-            } else if (hexa_marks[nav.dart().hexa] != mark && nav.dart().hexa_neighbor != -1 && hexa_marks[nav.flip_hexa().dart().hexa] == mark) {
+            } else if (nav.hexa().mark != mesh->mark && nav.dart().hexa_neighbor != -1 && nav.flip_hexa().hexa().mark == mesh->mark) {
                 nav = nav.flip_hexa().flip_edge();
                 add_straight_face(nav.dart(), -1);
                 // face was culled by the plane, is surface
-            } else if (hexa_marks[nav.dart().hexa] != mark && nav.dart().hexa_neighbor == -1) {
+            } else if (nav.hexa().mark != mesh->mark && nav.dart().hexa_neighbor == -1) {
                 add_hidden_face(nav.dart());
             }
         }

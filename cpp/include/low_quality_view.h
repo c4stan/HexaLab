@@ -16,13 +16,8 @@ namespace HexaLab {
         void add_hidden_face(Dart& dart);
         void add_hidden_wireframe(Dart& dart);
 
-        vector<uint32_t> hexa_marks;
-        vector<uint32_t> edge_marks;
-
-        float mark = 0;
-
     public:
-        LowQualityView() : IView("Low Quality View") {}
+        LowQualityView() : IView("Quality filter") {}
 
         void set_mesh(js_ptr mesh);
         void update();

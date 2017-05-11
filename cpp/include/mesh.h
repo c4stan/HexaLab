@@ -16,7 +16,7 @@ namespace HexaLab {
 
     struct Hexa {
         Index dart = -1;
-        int mark = 0;
+        uint64_t mark = 0;
         float scaled_jacobian = 0;
         int hexa_count = 0;
 
@@ -46,12 +46,12 @@ namespace HexaLab {
 
     struct Edge {
         Index dart = -1;
-        int mark = 0;
+        uint64_t mark = 0;
         int face_count = 0;
         bool surface = false;
 
         Edge(){}
-        Edge(Index dart) { this->dart = dart; }
+        Edge(int32_t dart) { this->dart = dart; }
 
         bool operator==(const Edge& other) const {
             return this->dart == other.dart;
@@ -78,16 +78,6 @@ namespace HexaLab {
         }
         bool operator!=(const Vert& other) const { return !(*this == other); }
     };
-    
-    struct SingularityElement {
-        Index idx;
-        int rank;
-
-        SingularityElement(Index idx, int rank) {
-            this->idx = idx;
-            this->rank = rank;
-        }
-    };
 
 class Mesh {
     friend class Builder;
@@ -98,6 +88,9 @@ class Mesh {
         vector<Edge> edges;
         vector<Vert> verts;
         vector<Dart> darts;
+
+        uint64_t mark = 0;
+        AlignedBox3f aabb;
 
         MeshNavigator navigate(Dart& dart) { return MeshNavigator(dart, *this); }
         MeshNavigator navigate(Hexa& hexa) { Dart& d = darts[hexa.dart]; return navigate(d); }

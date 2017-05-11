@@ -216,8 +216,10 @@ namespace HexaLab {
         edges_map.clear();
         faces_map.clear();
 
+        mesh.aabb = AlignedBox3f();
         for (size_t v = 0; v < vertices.size(); ++v) {
             mesh.verts.emplace_back(vertices[v]);
+            mesh.aabb.extend(vertices[v]);
         }
 
         size_t hexa_count = indices.size() / 8;
