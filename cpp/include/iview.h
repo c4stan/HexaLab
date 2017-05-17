@@ -12,15 +12,10 @@ namespace HexaLab {
 
     class IView {
     protected:
-        Mesh* mesh = nullptr;
-        const char* name;
+        Mesh& mesh;
     public:
-        IView(const char* name) { this->name = name; }
-        virtual void set_mesh(js_ptr mesh) = 0;
+        IView(Mesh& mesh) : mesh(mesh) {};
         virtual void update() = 0;
-        float get_size() { return mesh != nullptr ? mesh->aabb.diagonal().norm() : 0; };
-        Vector3f get_center() { return mesh != nullptr ? mesh->aabb.center() : Vector3f(0, 0, 0); };
-        const char* get_name() { return name; }
     };
 }
 

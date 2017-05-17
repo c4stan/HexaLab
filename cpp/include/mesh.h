@@ -91,7 +91,7 @@ class Mesh {
 
         uint64_t mark = 0;
         AlignedBox3f aabb;
-
+        
         MeshNavigator navigate(Dart& dart) { return MeshNavigator(dart, *this); }
         MeshNavigator navigate(Hexa& hexa) { Dart& d = darts[hexa.dart]; return navigate(d); }
         MeshNavigator navigate(Face& face) { Dart& d = darts[face.dart]; return navigate(d); }

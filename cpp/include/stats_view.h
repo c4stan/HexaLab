@@ -9,16 +9,12 @@ namespace HexaLab {
         vector<float> hexa_quality;
 
     public:
-        StatsView() : IView("Stats") {}
-
-        void set_mesh(js_ptr mesh) {
-            this->mesh = (Mesh*)mesh;
-            
+        StatsView(Mesh& mesh) : IView(mesh) {
             hexa_quality.clear();
-            hexa_quality.reserve(this->mesh->hexas.size());
+            hexa_quality.reserve(this->mesh.hexas.size());
 
-            for (int i = 0; i < this->mesh->hexas.size(); ++i) {
-                hexa_quality.push_back(this->mesh->hexas[i].scaled_jacobian);
+            for (int i = 0; i < this->mesh.hexas.size(); ++i) {
+                hexa_quality.push_back(this->mesh.hexas[i].scaled_jacobian);
             }
         }
 

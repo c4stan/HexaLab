@@ -13,15 +13,16 @@
 #include <eigen/geometry>
 
 using namespace HexaLab;
+using namespace Eigen;
 
-Mesh mesh;
+Mesh* mesh = new Mesh();
 
 bool import_mesh(string path) {
-    mesh.hexas.clear();
-    mesh.faces.clear();
-    mesh.edges.clear();
-    mesh.verts.clear();
-    mesh.darts.clear();
+    mesh->hexas.clear();
+    mesh->faces.clear();
+    mesh->edges.clear();
+    mesh->verts.clear();
+    mesh->darts.clear();
 
     HL_LOG("Loading %s...\n", path.c_str());
     vector<Vector3f> verts;
@@ -31,24 +32,23 @@ bool import_mesh(string path) {
     }
 
     HL_LOG("Building...\n");
-    Builder::build(mesh, verts, indices);
+    Builder::build(*mesh, verts, indices);
 
     HL_LOG("Validating...\n");
-    if (!Builder::validate(mesh)) {
+    if (!Builder::validate(*mesh)) {
         return false;
     }
 
     return true;
 }
 
-js_ptr get_mesh() { return (js_ptr)&mesh; }
+Mesh* get_mesh() { return mesh; }
 
 
 #include <emscripten.h>
 #include <emscripten/bind.h>
 
 using namespace emscripten;
-
 
 class js_vec3 : public Vector3f {
 public:
@@ -79,6 +79,14 @@ size_t buffer_size(std::vector<T>& v) {
     return v.size();
 }
 
+float mesh_size(Mesh& mesh) { 
+    return mesh.aabb.diagonal().norm(); 
+};
+Vector3f mesh_center(Mesh& mesh) { 
+    return mesh.aabb.center(); 
+};
+
+
 vector<Vector3f>* get_surface_vert_pos(Model& model) { return &model.surface_vert_pos; }
 vector<Vector3f>* get_surface_vert_norm(Model& model) { return &model.surface_vert_norm; }
 vector<Vector3f>* get_surface_vert_color(Model& model) { return &model.surface_vert_color; }
@@ -88,9 +96,13 @@ vector<Vector3f>* get_wireframe_vert_color(Model& model) { return &model.wirefra
 EMSCRIPTEN_BINDINGS(HexaLab) {
 	
     emscripten::function("import_mesh", &import_mesh);
-    emscripten::function("get_mesh",    &get_mesh);
+    emscripten::function("get_mesh", &get_mesh, allow_raw_pointers());
 
-    class_<HexaLab::Mesh>("Mesh");
+    class_<HexaLab::Mesh>("Mesh")
+        .constructor<>()
+        .function("get_size", &mesh_size)
+        .function("get_center", &mesh_center)
+        ;
 
     class_<Eigen::Vector3f>("float3")
         .constructor<>()
@@ -116,11 +128,7 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
         ;
 
     class_<HexaLab::CullingPlaneView>("CullingPlaneView")
-        .constructor<>()
-        .function("get_name", (js_ptr(HexaLab::CullingPlaneView::*)())(&HexaLab::IView::get_name), allow_raw_pointers())
-        .function("get_size", static_cast<float(HexaLab::CullingPlaneView::*)()>(&HexaLab::IView::get_size))
-        .function("get_center", static_cast<Eigen::Vector3f(HexaLab::CullingPlaneView::*)()>(&HexaLab::IView::get_center))
-        .function("set_mesh", &HexaLab::CullingPlaneView::set_mesh, allow_raw_pointers())
+        .constructor<Mesh&>()
         .function("update", &HexaLab::CullingPlaneView::update)
         .function("get_straight_model",     &HexaLab::CullingPlaneView::get_straight_model, allow_raw_pointers())
         .function("get_hidden_model",       &HexaLab::CullingPlaneView::get_hidden_model, allow_raw_pointers())
@@ -135,11 +143,7 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
         ;
 
     class_<HexaLab::LowQualityView>("LowQualityView")
-        .constructor<>()
-        .function("get_name", (js_ptr(HexaLab::LowQualityView::*)())(&HexaLab::IView::get_name), allow_raw_pointers())
-        .function("get_size", static_cast<float(HexaLab::LowQualityView::*)()>(&HexaLab::IView::get_size))
-        .function("get_center", static_cast<Eigen::Vector3f(HexaLab::LowQualityView::*)()>(&HexaLab::IView::get_center))
-        .function("set_mesh", &HexaLab::LowQualityView::set_mesh, allow_raw_pointers())
+        .constructor<Mesh&>()
         .function("update", &HexaLab::LowQualityView::update)
         .function("get_visible_model", &HexaLab::LowQualityView::get_visible_model, allow_raw_pointers())
         .function("get_hidden_model", &HexaLab::LowQualityView::get_hidden_model, allow_raw_pointers())
@@ -147,16 +151,12 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
         ;
 
     class_<HexaLab::StatsView>("StatsView")
-        .constructor<>()
-        .function("get_name", (js_ptr(HexaLab::StatsView::*)())(&HexaLab::IView::get_name), allow_raw_pointers())
-        .function("get_size", static_cast<float(HexaLab::StatsView::*)()>(&HexaLab::IView::get_size))
-        .function("get_center", static_cast<Eigen::Vector3f(HexaLab::StatsView::*)()>(&HexaLab::IView::get_center))
-        .function("set_mesh", &HexaLab::StatsView::set_mesh, allow_raw_pointers())
+        .constructor<Mesh&>()
         .function("update", &HexaLab::StatsView::update)
         .function("get_hexa_quality", &HexaLab::StatsView::get_hexa_quality, allow_raw_pointers())
         ;
 
-    class_<std::vector<float>>("bufferf")
+    class_<std::vector<float>>("buffer1f")
         .constructor<>()
         .function("data", &buffer_data<float>)
         .function("size", &buffer_size<float>)

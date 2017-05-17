@@ -17,9 +17,8 @@ namespace HexaLab {
         void add_hidden_wireframe(Dart& dart);
 
     public:
-        LowQualityView() : IView("Quality filter") {}
+        LowQualityView(Mesh& mesh) : IView(mesh) {}
 
-        void set_mesh(js_ptr mesh);
         void update();
 
         float quality_threshold;

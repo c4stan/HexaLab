@@ -18,50 +18,32 @@ namespace HexaLab {
         Hyperplane<float, 3> plane;
 
     public:
-        CullingPlaneView() : IView("Mesh") {}
+        CullingPlaneView(Mesh& mesh);
 
         void set_plane_position(float x, float y, float z) {
             plane = Hyperplane<float, 3>(plane.normal(), Vector3f(x, y, z));
         }
         void set_plane_normal(float nx, float ny, float nz) {
-            if (mesh != nullptr) {
-                Vector3f normal(nx, ny, nz);
-                normal.normalize();
-                plane = Hyperplane<float, 3>(normal, mesh->aabb.center() + normal * (mesh->aabb.diagonal().norm() * (get_plane_offset() - 0.5)));
-            }
+            Vector3f normal(nx, ny, nz);
+            normal.normalize();
+            plane = Hyperplane<float, 3>(normal, mesh.aabb.center() + normal * (mesh.aabb.diagonal().norm() * (get_plane_offset() - 0.5)));
         }
         void set_plane_offset(float offset) { // offset in [0,1]
-            if (mesh != nullptr) {
-                plane = Hyperplane<float, 3>(plane.normal(), mesh->aabb.center() + plane.normal() * (mesh->aabb.diagonal().norm() * (offset - 0.5)));
-            }
+             plane = Hyperplane<float, 3>(plane.normal(), mesh.aabb.center() + plane.normal() * (mesh.aabb.diagonal().norm() * (offset - 0.5)));
         }
         Vector3f get_plane_position() {
-            if (mesh != nullptr) {
-                Vector3f pos = mesh->aabb.center() + plane.normal() * (mesh->aabb.diagonal().norm() * (get_plane_offset() - 0.5));
-                return pos;
-            } else {
-                return Vector3f(0, 0, 0);
-            }
+            return mesh.aabb.center() + plane.normal() * (mesh.aabb.diagonal().norm() * (get_plane_offset() - 0.5));
         }
         Vector3f get_plane_normal() {
             return plane.normal();
         }
         float get_plane_offset() {   // return the offset from the center expressed in [0,1] range (0.5 is the center)
-            if (mesh != nullptr) {
-                return -plane.signedDistance(mesh->aabb.center()) / mesh->aabb.diagonal().norm() + 0.5;
-            } else {
-                return 0.5;
-            }
+            return -plane.signedDistance(mesh.aabb.center()) / mesh.aabb.diagonal().norm() + 0.5;
         }
         float get_plane_world_offset() {
-            if (mesh != nullptr) {
-                return plane.signedDistance(mesh->aabb.center());
-            } else {
-                return 0;
-            }
+            return plane.signedDistance(mesh.aabb.center());
         }
 
-        void set_mesh(js_ptr mesh);
         void update();
 
         Model* get_straight_model() { return &straight_model; }
