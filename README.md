@@ -1,12 +1,21 @@
 # HexaLab
 Hexahedral mesh web viewer
 
-https://c4stan.github.io/HexaLab/ for the Pages fork (usually up to date)
+live web version: https://c4stan.github.io/HexaLab/
 
 # Features
-* Fully embedded into an ordinary browser
-* Three.js based renderer
-* Emscripten compiled c++ mesh processing
+- Emscripten compiled c++ mesh processing
+    - Half-edge mesh representation
+- Three.js based renderer
+    - Normal-oriented hemisphere SSAO
+    - TODO Order-independent transparency?
+- View-based data displaying
+    - Mesh plane culling 
+    - Mesh hexas quality filtering
+    - Quality graphs
+    - Easy to add new views
+- Easy to embed into any web page
 
 # Samples
-![](http://i.imgur.com/eOfWW1N.png)
+![](http://i.imgur.com/3tQURRs.png)
+![](http://i.imgur.com/pAEcTFY.png)

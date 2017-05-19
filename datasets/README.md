@@ -1,12 +1,6 @@
-# HexaLab
-Hexahedral mesh web viewer
+# Datasets
+A collection of datasets used in papers and publications.
+# How to contribute
+Just add a new folder with your mesh files inside and name it properly.
 
-https://c4stan.github.io/HexaLab/ for the Pages fork (usually up to date)
-
-# Features
-* Fully embedded into an ordinary browser
-* Three.js based renderer
-* Emscripten compiled c++ mesh processing
-
-# Samples
-![](http://i.imgur.com/eOfWW1N.png)
+Feel free to include copyright/notes inside, too.
