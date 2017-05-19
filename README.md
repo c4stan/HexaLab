@@ -9,12 +9,12 @@ live web version: https://c4stan.github.io/HexaLab/
 - Three.js based renderer
     - Normal-oriented hemisphere SSAO
     - TODO Order-independent transparency?
-- View-based data displaying
+- View-based data display
     - Mesh plane culling 
     - Mesh hexas quality filtering
     - Quality graphs
     - Easy to add new views
-- Easy to embed into any web page
+- WIP Easy to embed into any web page
 
 # Samples
 ![](http://i.imgur.com/3tQURRs.png)
