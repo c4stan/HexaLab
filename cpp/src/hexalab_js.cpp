@@ -17,6 +17,15 @@ using namespace Eigen;
 
 Mesh* mesh = new Mesh();
 
+namespace HexaLab {
+    class HLMesh : public Mesh {
+        AlignedBox3f aabb;
+        float min_hexa_size;
+        float max_hexa_size;
+        float avg_hexa_size;
+    };
+}
+
 bool import_mesh(string path) {
     mesh->hexas.clear();
     mesh->faces.clear();
@@ -85,7 +94,15 @@ float mesh_size(Mesh& mesh) {
 Vector3f mesh_center(Mesh& mesh) { 
     return mesh.aabb.center(); 
 };
-
+float min_edge_len(Mesh& mesh) {
+    return mesh.min_edge_len;
+}
+float max_edge_len(Mesh& mesh) {
+    return mesh.max_edge_len;
+}
+float avg_edge_len(Mesh& mesh) {
+    return mesh.avg_edge_len;
+}
 
 vector<Vector3f>* get_surface_vert_pos(Model& model) { return &model.surface_vert_pos; }
 vector<Vector3f>* get_surface_vert_norm(Model& model) { return &model.surface_vert_norm; }
@@ -102,6 +119,9 @@ EMSCRIPTEN_BINDINGS(HexaLab) {
         .constructor<>()
         .function("get_size", &mesh_size)
         .function("get_center", &mesh_center)
+        .function("min_edge_len", &min_edge_len)
+        .function("max_edge_len", &max_edge_len)
+        .function("avg_edge_len", &avg_edge_len)
         ;
 
     class_<Eigen::Vector3f>("float3")

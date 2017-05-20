@@ -228,6 +228,7 @@ namespace HexaLab {
         }
 
         for (size_t i = 0; i < hexa_count; ++i) {
+            // compute quality
             mesh.hexas[i].scaled_jacobian =  scaled_jacobian(
                 vertices[indices[i * 8 + 0]],
                 vertices[indices[i * 8 + 1]],
@@ -238,6 +239,7 @@ namespace HexaLab {
                 vertices[indices[i * 8 + 6]],
                 vertices[indices[i * 8 + 7]]
             );
+            // count neighbors
             MeshNavigator nav = mesh.navigate(mesh.hexas[i]);
             for (int j = 0; j < 6; ++j) {
                 if (nav.dart().hexa_neighbor != -1) {
@@ -246,6 +248,20 @@ namespace HexaLab {
                 nav = nav.next_hexa_face();
             }
         }
+
+        float min = std::numeric_limits<float>::lowest(), max = std::numeric_limits<float>::max(), avg = 0;
+        for (size_t i = 0; i < mesh.edges.size(); ++i) {
+            MeshNavigator nav = mesh.navigate(mesh.edges[i]);
+            Vector3f edge = nav.vert().position - nav.flip_vert().vert().position;
+            float len = edge.norm();
+            if (len > min) min = len;
+            if (len < max) max = len;
+            avg += len;
+        }
+        avg /= mesh.edges.size();
+        mesh.min_edge_len = min;
+        mesh.max_edge_len = max;
+        mesh.avg_edge_len = avg;
 
         for (size_t i = 0; i < mesh.edges.size(); ++i) {
             MeshNavigator nav = mesh.navigate(mesh.edges[i]);
