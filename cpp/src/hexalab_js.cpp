@@ -3,10 +3,9 @@
 #include <loader.h>
 #include <builder.h>
 #include <model.h>
-
-#include <culling_plane_view.h>
-#include <low_quality_view.h>
-#include <stats_view.h>
+#include <app.h>
+#include <plane_filter.h>
+#include <quality_filter.h>
 
 #include <vector>
 #include <eigen/dense>
@@ -14,70 +13,6 @@
 
 using namespace HexaLab;
 using namespace Eigen;
-
-Mesh* mesh = new Mesh();
-
-namespace HexaLab {
-    class HLMesh : public Mesh {
-        AlignedBox3f aabb;
-        float min_hexa_size;
-        float max_hexa_size;
-        float avg_hexa_size;
-    };
-}
-
-bool import_mesh(string path) {
-    mesh->hexas.clear();
-    mesh->faces.clear();
-    mesh->edges.clear();
-    mesh->verts.clear();
-    mesh->darts.clear();
-
-    HL_LOG("Loading %s...\n", path.c_str());
-    vector<Vector3f> verts;
-    vector<HexaLab::Index> indices;
-    if (!Loader::load(path, verts, indices)) {
-        return false;
-    }
-
-    HL_LOG("Building...\n");
-    Builder::build(*mesh, verts, indices);
-
-    HL_LOG("Validating...\n");
-    if (!Builder::validate(*mesh)) {
-        return false;
-    }
-
-    return true;
-}
-
-Mesh* get_mesh() { return mesh; }
-
-
-#include <emscripten.h>
-#include <emscripten/bind.h>
-
-using namespace emscripten;
-
-class js_vec3 : public Vector3f {
-public:
-    js_vec3() : Vector3f() {};
-    js_vec3(const Vector3f& v) : Vector3f(v) {};
-    js_vec3(const Vector3f&& v) : Vector3f(v) {};
-    float x() { return Vector3f::x(); }
-    float y() { return Vector3f::y(); }
-    float z() { return Vector3f::z(); }
-};
-
-float vec3_x(Vector3f& v) {
-    return v.x();
-}
-float vec3_y(Vector3f& v) {
-    return v.y();
-}
-float vec3_z(Vector3f& v) {
-    return v.z();
-}
 
 template<typename T>
 js_ptr buffer_data(std::vector<T>& v) {
@@ -94,14 +29,9 @@ float mesh_size(Mesh& mesh) {
 Vector3f mesh_center(Mesh& mesh) { 
     return mesh.aabb.center(); 
 };
-float min_edge_len(Mesh& mesh) {
-    return mesh.min_edge_len;
-}
-float max_edge_len(Mesh& mesh) {
-    return mesh.max_edge_len;
-}
-float avg_edge_len(Mesh& mesh) {
-    return mesh.avg_edge_len;
+
+vector<float>* hexa_quality(App& app) {
+    return &app.get_hexa_quality();
 }
 
 vector<Vector3f>* get_surface_vert_pos(Model& model) { return &model.surface_vert_pos; }
@@ -110,73 +40,77 @@ vector<Vector3f>* get_surface_vert_color(Model& model) { return &model.surface_v
 vector<Vector3f>* get_wireframe_vert_pos(Model& model) { return &model.wireframe_vert_pos; }
 vector<Vector3f>* get_wireframe_vert_color(Model& model) { return &model.wireframe_vert_color; }
 
+#include <emscripten.h>
+#include <emscripten/bind.h>
+using namespace emscripten;
 EMSCRIPTEN_BINDINGS(HexaLab) {
 	
-    emscripten::function("import_mesh", &import_mesh);
-    emscripten::function("get_mesh", &get_mesh, allow_raw_pointers());
+    class_<App>("App")
+        .constructor<>()
+        .function("build_models", &App::build_models)
+        .function("import_mesh", &App::import_mesh)
+        .function("add_filter", &App::add_filter, allow_raw_pointers())
+        .function("get_mesh", &App::get_mesh, allow_raw_pointers())
+        .function("get_visible_model", &App::get_visible_model, allow_raw_pointers())
+        .function("get_filtered_model", &App::get_filtered_model, allow_raw_pointers())
+        .function("get_singularity_model", &App::get_singularity_model, allow_raw_pointers())
+        .function("get_hexa_quality", &hexa_quality, allow_raw_pointers())
+        ;
 
-    class_<HexaLab::Mesh>("Mesh")
+    class_<Model>("Model")
+        .constructor<>()
+        .property("dirty", &Model::dirty_flag)
+        .function("surface_pos", &get_surface_vert_pos, allow_raw_pointers())
+        .function("surface_norm", &get_surface_vert_norm, allow_raw_pointers())
+        .function("surface_color", &get_surface_vert_color, allow_raw_pointers())
+        .function("wireframe_pos", &get_wireframe_vert_pos, allow_raw_pointers())
+        .function("wireframe_color", &get_wireframe_vert_color, allow_raw_pointers())
+        ;
+
+    class_<Mesh>("Mesh")
         .constructor<>()
         .function("get_size", &mesh_size)
         .function("get_center", &mesh_center)
-        .function("min_edge_len", &min_edge_len)
-        .function("max_edge_len", &max_edge_len)
-        .function("avg_edge_len", &avg_edge_len)
+        .property("min_edge_len", &Mesh::min_edge_len)
+        .property("max_edge_len", &Mesh::max_edge_len)
+        .property("avg_edge_len", &Mesh::avg_edge_len)
         ;
 
-    class_<Eigen::Vector3f>("float3")
+    class_<IFilter>("Filter")
+        ;
+
+    class_<PlaneFilter, base<IFilter>>("PlaneFilter")
         .constructor<>()
-        .function("x", static_cast<float&(Eigen::Vector3f::*)()>(select_overload<float&()>(&Vector3f::x)))
-        .function("y", static_cast<float&(Eigen::Vector3f::*)()>(select_overload<float&()>(&Vector3f::y)))
-        .function("z", static_cast<float&(Eigen::Vector3f::*)()>(select_overload<float&()>(&Vector3f::z)))
+        .function("filter", &PlaneFilter::filter)
+        .function("on_mesh_set", &PlaneFilter::on_mesh_set)
+        .function("set_plane_normal", &PlaneFilter::set_plane_normal)
+        .function("set_plane_offset", &PlaneFilter::set_plane_offset)
+        .function("get_plane_normal", &PlaneFilter::get_plane_normal)
+        .function("get_plane_offset", &PlaneFilter::get_plane_offset)
+        .function("get_plane_world_offset", &PlaneFilter::get_plane_world_offset)
         ;
 
-    class_<std::vector<Vector3f>>("buffer3f")
+    class_<QualityFilter, base<IFilter>>("QualityFilter")
+        .constructor<>()
+        .function("filter", &QualityFilter::filter)
+        .function("on_mesh_set", static_cast<void(QualityFilter::*)(Mesh&)>(&IFilter::on_mesh_set))
+        .property("quality_threshold", &QualityFilter::quality_threshold)
+        ;
+
+    class_<Vector3f>("float3")
+        .constructor<>()
+        .function("x", static_cast<float&(Vector3f::*)()>(select_overload<float&()>(&Vector3f::x)))
+        .function("y", static_cast<float&(Vector3f::*)()>(select_overload<float&()>(&Vector3f::y)))
+        .function("z", static_cast<float&(Vector3f::*)()>(select_overload<float&()>(&Vector3f::z)))
+        ;
+
+    class_<vector<Vector3f>>("buffer3f")
         .constructor<>()
         .function("data", &buffer_data<Vector3f>)
         .function("size", &buffer_size<Vector3f>)
         ;
-    
-    class_<HexaLab::Model>("Model")
-        .constructor<>()
-        .property("dirty",              &HexaLab::Model::dirty_flag)
-        .function("surface_pos",        &get_surface_vert_pos, allow_raw_pointers())
-        .function("surface_norm",       &get_surface_vert_norm, allow_raw_pointers())
-        .function("surface_color",      &get_surface_vert_color, allow_raw_pointers())
-        .function("wireframe_pos",      &get_wireframe_vert_pos, allow_raw_pointers())
-        .function("wireframe_color",    &get_wireframe_vert_color, allow_raw_pointers())
-        ;
 
-    class_<HexaLab::CullingPlaneView>("CullingPlaneView")
-        .constructor<Mesh&>()
-        .function("update", &HexaLab::CullingPlaneView::update)
-        .function("get_straight_model",     &HexaLab::CullingPlaneView::get_straight_model, allow_raw_pointers())
-        .function("get_hidden_model",       &HexaLab::CullingPlaneView::get_hidden_model, allow_raw_pointers())
-        .function("get_singularity_model",  &HexaLab::CullingPlaneView::get_singularity_model, allow_raw_pointers())
-        .function("set_plane_position",     &HexaLab::CullingPlaneView::set_plane_position)
-        .function("set_plane_normal",       &HexaLab::CullingPlaneView::set_plane_normal)
-        .function("set_plane_offset",       &HexaLab::CullingPlaneView::set_plane_offset)
-        .function("get_plane_position",     &HexaLab::CullingPlaneView::get_plane_position)
-        .function("get_plane_normal",       &HexaLab::CullingPlaneView::get_plane_normal)
-        .function("get_plane_offset",       &HexaLab::CullingPlaneView::get_plane_offset)
-        .function("get_plane_world_offset", &HexaLab::CullingPlaneView::get_plane_world_offset)
-        ;
-
-    class_<HexaLab::LowQualityView>("LowQualityView")
-        .constructor<Mesh&>()
-        .function("update", &HexaLab::LowQualityView::update)
-        .function("get_visible_model", &HexaLab::LowQualityView::get_visible_model, allow_raw_pointers())
-        .function("get_hidden_model", &HexaLab::LowQualityView::get_hidden_model, allow_raw_pointers())
-        .property("quality_threshold",      &HexaLab::LowQualityView::quality_threshold)
-        ;
-
-    class_<HexaLab::StatsView>("StatsView")
-        .constructor<Mesh&>()
-        .function("update", &HexaLab::StatsView::update)
-        .function("get_hexa_quality", &HexaLab::StatsView::get_hexa_quality, allow_raw_pointers())
-        ;
-
-    class_<std::vector<float>>("buffer1f")
+    class_<vector<float>>("buffer1f")
         .constructor<>()
         .function("data", &buffer_data<float>)
         .function("size", &buffer_size<float>)

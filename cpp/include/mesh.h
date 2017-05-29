@@ -16,7 +16,7 @@ namespace HexaLab {
 
     struct Hexa {
         Index dart = -1;
-        uint64_t mark = 0;
+        uint64_t filter_mark = 0;
         float scaled_jacobian = 0;
         int hexa_count = 0;
 
