@@ -1,9 +1,5 @@
 # HexaLab
 Hexahedral mesh web viewer
 
-live web version: https://c4stan.github.io/HexaLab/
-
-# Samples
-![](http://i.imgur.com/3tQURRs.png)
-![](http://i.imgur.com/pAEcTFY.png)
-![](http://i.imgur.com/YFyj50g.png)
+This is an outdated repository. For the up-to-date version, go [here]https://github.com/cnr-isti-vclab/HexaLab.
+For a live web version, go [here]http://www.hexalab.it/.
